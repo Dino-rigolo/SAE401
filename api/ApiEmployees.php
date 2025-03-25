@@ -55,7 +55,20 @@ switch ($request_method) {
                 
                 // Récupérer un employé via son email (utile pour l'authentification)
                 } elseif ($_REQUEST["action"] == "getbyemail" && !empty($_REQUEST["email"])) {
-                    $employees = $entityManager->getRepository(Employees::class)->findBy(['employee_email' => $_REQUEST["email"]]);
+                    $employee = $entityManager->getRepository(Employees::class)->findOneBy(['email' => $_REQUEST["email"]]);
+                    if ($employee) {
+                        echo json_encode([
+                            'employee_id' => $employee->getEmployeeId(),
+                            'employee_name' => $employee->getEmployeeName(),
+                            'employee_email' => $employee->getEmployeeEmail(),
+                            'employee_password' => $employee->getEmployeePassword(),
+                            'employee_role' => $employee->getEmployeeRole(),
+                            'store_id' => $employee->getStore() ? $employee->getStore()->getStoreId() : null
+                        ]);
+                    } else {
+                        echo json_encode(['error' => 'Employee not found']);
+                    }
+                    exit();
                 
                 // Vérifier si un email existe déjà (éviter les doublons)
                 } elseif ($_REQUEST["action"] == "emailexists" && !empty($_REQUEST["email"])) {

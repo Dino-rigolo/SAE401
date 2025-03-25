@@ -3,77 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BikeStores - SAE 301</title>
-    <link rel="stylesheet" href="www/css/header.css">
-
-  <!--connection-->
-    <!-- <link href="www/css/connection.css" rel="stylesheet">-->
-    <link href="www/css/styles.css" rel="stylesheet"> 
+    <title>BikeStores - SAE 401</title>
+    <link rel="stylesheet" href="/SAE401/www/css/style.css">
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" class="d-none">
-  <symbol id="people-circle" viewBox="0 0 16 16">
-    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-  </symbol>
-</svg>
 
 <header>
-   <nav class="py-2 border-bottom">
-    <div class="container d-flex flex-wrap">
-    <a href="index.php"><img src="www/images/logo.svg" alt="logo minuit" class="logominuit"></a>
-    <?php
-      if(isset($_SESSION["compte"])){
-        if($_SESSION["compte"] instanceof Employee){ // Si le compte est un employée
-          if($_SESSION["compte"]->isSalesEmployee()){ //Si c'est un vendeur
-            echo "<ul class=\"nav me-auto\">  
-            <li class=\"nav-item\"><a href=\"index.php?action=GenderRanking\" class=\"nav-link link-body-emphasis px-2 active\" aria-current=\"page\">CLASSEMENT GENRE</a></li>
-            <li class=\"nav-item\"><a href=\"index.php?action=AgentResume\" class=\"nav-link link-body-emphasis px-2\">RESUMÉ</a></li>
-            <li class=\"nav-item\"><a href=\"index.php?action=CountryStats\" class=\"nav-link link-body-emphasis px-2\">CLASSEMENT PAYS</a></li>
+   <nav>
+    <div class="container">
+        <a href="/SAE401/home"><img src="/SAE401/www/images/logobikestores.svg"  alt="logo BikeStores" class="logo"></a>
+        
+        <!-- Navigation principale -->
+        <ul class="navigation">
+            <!-- Pages accessibles à tous (connectés ou non) -->
+            <li><a href="/SAE401/home">Bikes</a></li>
+            
+            <?php if(isset($_SESSION['employee'])): ?>
+                <!-- Liens pour employés (sans rôle spécifique) -->
+                <li class="dropdown">
+                    <a href="#">Products management</a>
+                    <ul class="dropdown-content">
+                        <li><a href="/SAE401/brands">Brand</a></li>
+                        <li><a href="/SAE401/categories">Category</a></li>
+                        <li><a href="/SAE401/shops">Shops</a></li>
+                        <li><a href="/SAE401/products">Products</a></li>
+                        <li><a href="/SAE401/stocks">Stocks</a></li>
+                    </ul>
+                </li>
+                
+                <?php if(isset($_SESSION['employee']['employee_role']) && ($_SESSION['employee']['employee_role'] === 'chef' || $_SESSION['employee']['employee_role'] === 'it')): ?>
+                    <!-- Liens supplémentaires pour les chefs et IT -->
+                    <li><a href="/SAE401/employees">Employees</a></li>
+                <?php endif; ?>
+            <?php endif; ?>
+        </ul>
+        
+        <!-- Partie droite de la navigation (connexion/compte) -->
+        <div class="user-menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8 0-1.168.258-2.275.709-3.276.154.09.308.182.456.276.396.25.791.5 1.286.688.494.187 1.088.312 1.879.312.792 0 1.386-.125 1.881-.313s.891-.437 1.287-.687.792-.5 1.287-.688c.494-.187 1.088-.312 1.88-.312s1.386.125 1.88.313c.495.187.891.437 1.287.687s.792.5 1.287.688c.178.067.374.122.581.171.191.682.3 1.398.3 2.141 0 4.411-3.589 8-8 8z"></path><circle cx="8.5" cy="12.5" r="1.5"></circle><circle cx="15.5" cy="12.5" r="1.5"></circle></svg>
 
-            </ul>";
-          }elseif($_SESSION["compte"]->isItStaff()){
-            echo "<ul class=\"nav me-auto\">
-            <li class=\"nav-item\"><a href=\"index.php?action=ListCustomer\" class=\"nav-link link-body-emphasis px-2 active\" aria-current=\"page\">LISTE DES COMPTES</a></li>
-            <li class=\"nav-item\"><a href=\"index.php?action=ModifAllPlaylist\" class=\"nav-link link-body-emphasis px-2\">PLAYLISTS</a></li>
-          </ul>";
-          }
-          echo "<div class=\"iconeblock\">
-          <a href=\"#\" class=\"d-block link-body-emphasis text-decoration-none dropdown-toggle\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">
-            <svg class=\"rounded-circle\" width=\"32\" height=\"32\"><use xlink:href=\"#people-circle\"/></svg>
-          </a>
-          <ul class=\"dropdown-menu text-small shadow\">
-            <li><a class=\"dropdown-item\" href=\"index.php?action=ViewInfo\">Compte</a></li>
-            <li><hr class=\"dropdown-divider\"></li>
-            <li><a class=\"dropdown-item\" href=\"index.php?action=deconnection\">Déconnexion</a></li>
-          </ul>";
-        }else if($_SESSION["compte"] instanceof Customer) {// Si le compte n'est pas un employée
-          echo "<ul class=\"nav me-auto\">
-          <li class=\"nav-item\"><a href=\"index.php?action=ViewCatalogue\" class=\"nav-link link-body-emphasis px-2 active\" aria-current=\"page\">CATALOGUE</a></li>
-          <li class=\"nav-item\"><a href=\"index.php?action=ViewMusicClient\" class=\"nav-link link-body-emphasis px-2\">MES MUSIQUES</a></li>
-        </ul>";
-        echo "<div class=\"iconeblock\">
-              <a href=\"#\" class=\"d-block link-body-emphasis text-decoration-none dropdown-toggle\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">
-                <svg class=\"rounded-circle\" width=\"32\" height=\"32\"><use xlink:href=\"#people-circle\"/></svg>
-              </a>
-              <ul class=\"dropdown-menu text-small shadow\">
-                <li><a class=\"dropdown-item\" href=\"index.php?action=ViewInfo\">Compte</a></li>
-                <li><a class=\"dropdown-item\" href=\"index.php?action=ViewPurchaseHistoryClient\">Historique d'achat</a></li>
-                <li><hr class=\"dropdown-divider\"></li>
-                <li><a class=\"dropdown-item\" href=\"index.php?action=deconnection\">Déconnexion</a></li>
-              </ul>";
-          }
-        }
-    ?>
+            <?php if(isset($_SESSION['employee'])): ?>
+                <!-- Utilisateur connecté -->
+                <div class="dropdown">
+                    <a href="#">
+                        <span><?= htmlspecialchars($_SESSION['employee']['employee_name']) ?></span>
+                    </a>
+                    <ul class="dropdown-content">
+                        <li><a href="/SAE401/information">Your information</a></li>
+                        <li><a href="/SAE401/deconnexion">Logout</a></li>
+                    </ul>
+                </div>
+            <?php else: ?>
+                <!-- Utilisateur non connecté -->
+                <a href="/SAE401/connexion" class="btn-connexion">Connexion</a>
+            <?php endif; ?>
+        </div>
     </div>
   </nav>
 </header>
-<?
+
+<?php
+// Affichage des messages d'erreur
 if(isset($_SESSION["error"]) && $_SESSION["error"] != ""){
-    echo "<div class=\"alert alert-danger\" role=\"alert\">{$_SESSION["error"]}</div>";
+    echo "<div class=\"error-message\">{$_SESSION["error"]}</div>";
     $_SESSION["error"] = "";
 }
-
-
-
 ?>

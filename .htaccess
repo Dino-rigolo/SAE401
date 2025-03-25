@@ -1,9 +1,16 @@
 RewriteEngine On
 RewriteBase /SAE401/
 
+# Autoriser l'accès direct aux fichiers statiques
+RewriteCond %{REQUEST_URI} \.(css|js|jpg|jpeg|png|gif|ico)$ [OR]
+RewriteCond %{REQUEST_URI} ^/SAE401/www/
+RewriteRule .* - [L]
+
+# Règles pour les autres requêtes
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)/$ /$1 [L,R=301]
+RewriteRule ^(.*)$ index.php?action=$1 [QSA,L]
 
 # Routes pour les marques (Brands)
 # GET - Récupérer toutes les marques
@@ -123,3 +130,14 @@ RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=update&id=$1 [L,QSA
 # DELETE - Supprimer un magasin
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=delete&id=$1 [L,QSA]
+
+# Première tentative : exemption spécifique pour les ressources statiques
+RewriteRule ^www/css/(.*)$ www/css/$1 [L]
+RewriteRule ^www/js/(.*)$ www/js/$1 [L]
+RewriteRule ^www/images/(.*)$ www/images/$1 [L]
+
+# Permettre l'accès aux fichiers CSS, JS, et images
+<FilesMatch "\.(css|js|jpg|jpeg|png|gif|ico)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
