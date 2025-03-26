@@ -54,19 +54,56 @@ switch ($request_method) {
                     $employees = $entityManager->getRepository(Employees::class)->findBy(['employee_role' => $_REQUEST["role"]]);
                 
                 // Récupérer un employé via son email (utile pour l'authentification)
-                } elseif ($_REQUEST["action"] == "getbyemail" && !empty($_REQUEST["email"])) {
-                    $employee = $entityManager->getRepository(Employees::class)->findOneBy(['email' => $_REQUEST["email"]]);
-                    if ($employee) {
-                        echo json_encode([
-                            'employee_id' => $employee->getEmployeeId(),
-                            'employee_name' => $employee->getEmployeeName(),
-                            'employee_email' => $employee->getEmployeeEmail(),
-                            'employee_password' => $employee->getEmployeePassword(),
-                            'employee_role' => $employee->getEmployeeRole(),
-                            'store_id' => $employee->getStore() ? $employee->getStore()->getStoreId() : null
-                        ]);
-                    } else {
-                        echo json_encode(['error' => 'Employee not found']);
+                }elseif ($_REQUEST["action"] == "getbyemail" && !empty($_REQUEST["email"])) {
+                    // Récupérer tous les employés pour vérifier
+                    $allEmployees = $entityManager->getRepository(Employees::class)->findAll();
+                    error_log("Tous les employés disponibles:");
+                    foreach ($allEmployees as $emp) {
+                        error_log("ID: " . $emp->getEmployeeId() . ", Email: " . $emp->getEmployeeEmail());
+                    }
+                    
+                    
+                    // CORRECTION : Vérifier le nom exact de la colonne dans votre entité
+                    // Si votre entité utilise 'employee_email', mais la base de données utilise un autre nom
+                    try {
+                        // Tentative avec findOneBy
+                        $employee = $entityManager->getRepository(Employees::class)->findOneBy(['employee_email' => strtolower($_REQUEST["email"])]);
+                        
+                        // Si ça ne fonctionne pas, essayer avec createQueryBuilder
+                        if (!$employee) {
+                            error_log("Tentative avec QueryBuilder");
+                            $qb = $entityManager->createQueryBuilder();
+                            $qb->select('e')
+                               ->from(Employees::class, 'e')
+                               ->where('e.employee_email = :email')
+                               ->setParameter('email', $_REQUEST["email"]);
+                            
+                            $query = $qb->getQuery();
+                            $employee = $query->getOneOrNullResult();
+                        }
+                        
+                        // Log pour vérifier si l'employé est trouvé
+                        error_log("Employé trouvé: " . ($employee ? "Oui" : "Non"));
+                        
+                        if ($employee) {
+                            $response = json_encode([
+                                'employee_id' => $employee->getEmployeeId(),
+                                'employee_name' => $employee->getEmployeeName(),
+                                'employee_email' => $employee->getEmployeeEmail(),
+                                'employee_password' => $employee->getEmployeePassword(),
+                                'employee_role' => $employee->getEmployeeRole(),
+                                'store_id' => $employee->getStore() ? $employee->getStore()->getStoreId() : null
+                            ]);
+                            error_log("Réponse JSON: " . $response);
+                            echo $response;
+                        } else {
+                            $response = json_encode(['error' => 'Employee not found']);
+                            error_log("Réponse d'erreur: " . $response);
+                            echo $response;
+                        }
+                    } catch (Exception $e) {
+                        error_log("Exception lors de la recherche par email: " . $e->getMessage());
+                        echo json_encode(['error' => 'Error searching employee: ' . $e->getMessage()]);
                     }
                     exit();
                 

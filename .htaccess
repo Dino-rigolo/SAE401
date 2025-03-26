@@ -6,12 +6,7 @@ RewriteCond %{REQUEST_URI} \.(css|js|jpg|jpeg|png|gif|ico)$ [OR]
 RewriteCond %{REQUEST_URI} ^/SAE401/www/
 RewriteRule .* - [L]
 
-# Règles pour les autres requêtes
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)/$ /$1 [L,R=301]
-RewriteRule ^(.*)$ index.php?action=$1 [QSA,L]
-
+# Règles pour les API routes
 # Routes pour les marques (Brands)
 # GET - Récupérer toutes les marques
 RewriteRule ^api/brands/?$ api/ApiBrands.php?action=getall [L,QSA]
@@ -30,7 +25,6 @@ RewriteRule ^api/brands/([0-9]+)/?$ api/ApiBrands.php?action=update&id=$1 [L,QSA
 # DELETE - Supprimer une marque
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/brands/([0-9]+)/?$ api/ApiBrands.php?action=delete&id=$1 [L,QSA]
-
 
 # Routes pour les catégories (Categories)
 # GET - Récupérer toutes les catégories
@@ -51,13 +45,15 @@ RewriteRule ^api/categories/([0-9]+)/?$ api/ApiCategories.php?action=update&id=$
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/categories/([0-9]+)/?$ api/ApiCategories.php?action=delete&id=$1 [L,QSA]
 
-
 # Routes pour les employés (Employees)
 # GET - Récupérer tous les employés
 RewriteRule ^api/employees/?$ api/ApiEmployees.php?action=getall [L,QSA]
 
 # GET - Récupérer un employé par ID
 RewriteRule ^api/employees/([0-9]+)/?$ api/ApiEmployees.php?action=getbyid&id=$1 [L,QSA]
+
+# GET - Récupérer un employé par email
+RewriteRule ^api/employees/email/([^/]+)/?$ api/ApiEmployees.php?action=getbyemail&email=$1 [L,QSA]
 
 # POST - Créer un nouvel employé
 RewriteCond %{REQUEST_METHOD} POST
@@ -70,7 +66,6 @@ RewriteRule ^api/employees/([0-9]+)/?$ api/ApiEmployees.php?action=update&id=$1 
 # DELETE - Supprimer un employé
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/employees/([0-9]+)/?$ api/ApiEmployees.php?action=delete&id=$1 [L,QSA]
-
 
 # Routes pour les produits (Products)
 # GET - Récupérer tous les produits
@@ -91,7 +86,6 @@ RewriteRule ^api/products/([0-9]+)/?$ api/ApiProducts.php?action=update&id=$1 [L
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/products/([0-9]+)/?$ api/ApiProducts.php?action=delete&id=$1 [L,QSA]
 
-
 # Routes pour les stocks (Stocks)
 # GET - Récupérer tous les stocks
 RewriteRule ^api/stocks/?$ api/ApiStocks.php?action=getall [L,QSA]
@@ -110,7 +104,6 @@ RewriteRule ^api/stocks/([0-9]+)/?$ api/ApiStocks.php?action=update&id=$1 [L,QSA
 # DELETE - Supprimer un stock
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/stocks/([0-9]+)/?$ api/ApiStocks.php?action=delete&id=$1 [L,QSA]
-
 
 # Routes pour les magasins (Stores)
 # GET - Récupérer tous les magasins
@@ -131,13 +124,16 @@ RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=update&id=$1 [L,QSA
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=delete&id=$1 [L,QSA]
 
-# Première tentative : exemption spécifique pour les ressources statiques
-RewriteRule ^www/css/(.*)$ www/css/$1 [L]
-RewriteRule ^www/js/(.*)$ www/js/$1 [L]
-RewriteRule ^www/images/(.*)$ www/images/$1 [L]
+# Règle pour gérer les routes non-API (doit être en dernier)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php?action=$1 [QSA,L]
 
-# Permettre l'accès aux fichiers CSS, JS, et images
-<FilesMatch "\.(css|js|jpg|jpeg|png|gif|ico)$">
-    Order allow,deny
-    Allow from all
-</FilesMatch>
+# Permettre CORS pour l'API
+<IfModule mod_headers.c>
+    <FilesMatch "^api/">
+        Header Set Access-Control-Allow-Origin "*"
+        Header Set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Header Set Access-Control-Allow-Headers "Content-Type, Authorization, Api"
+    </FilesMatch>
+</IfModule>

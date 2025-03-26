@@ -1,38 +1,31 @@
 <?php 
-// Au début du fichier
-//session_start(); // Assurez-vous que la session est démarrée
-var_dump($_POST); // Voir les données postées
-var_dump($_SESSION); // Voir l'état de la session
+// Vérifier si la session est déjà démarrée avant de la démarrer
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Conserver les var_dump pour le débogage
+ var_dump($_POST); // Voir les données postées
+ var_dump($_SESSION); // Voir l'état de la session
 
 include_once('www/header.inc.php');
 ?>
 <h1>Identify yourself</h1>
 
 <?php
-// Code temporaire pour tester la connexion
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email']) && isset($_POST['password'])) {
-    // Employé de test (à remplacer par l'appel API réel)
-    $testEmployee = [
-        'employee_id' => 1,
-        'employee_name' => 'Test User',
-        'employee_email' => 'shannahsummer@bikestore.com',
-        'employee_password' => password_hash('TVv(cB4mBEiC', PASSWORD_DEFAULT),
-        'employee_role' => 'it'
-    ];
-    
-    if ($_POST['email'] === $testEmployee['employee_email'] && 
-        password_verify($_POST['password'], $testEmployee['employee_password'])) {
-        $_SESSION['employee'] = $testEmployee;
-        $_SESSION['success'] = "Connexion réussie !";
-        echo "<script>alert('Connexion réussie !'); window.location.href='/SAE401/home';</script>";
-        exit;
-    } else {
-        echo "<div class='error'>Email ou mot de passe incorrect</div>";
-    }
+// Affichage des messages d'erreur/succès
+if (isset($_SESSION['error'])) {
+    echo "<div class='error'>{$_SESSION['error']}</div>";
+    unset($_SESSION['error']);
+}
+
+if (isset($_SESSION['success'])) {
+    echo "<div class='success'>{$_SESSION['success']}</div>";
+    unset($_SESSION['success']);
 }
 ?>
 
-<form action="/SAE401/connexion" method="POST">
+<form action="https://clafoutis.alwaysdata.net/SAE401/connexion" method="POST">
     <div>
         <label for="email">Email</label>
         <input type="text" name="email" id="email" required>
