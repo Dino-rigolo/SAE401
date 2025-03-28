@@ -1,190 +1,73 @@
-/* Styles de base */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-} 
-
-body {
-    margin: 0;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    font-family: 'Roboto', sans-serif;
-    background-color: #f8f9fa;
-    text-align: center;
-}
-h1{margin: 40px;}
-
-/*connexion*/
-form{
-    display: flex;
-    flex-direction: column;
-    width: 400px;
-    margin-bottom: 40px;
-    color: white;
-    background-color: #212529;
-    align-items: center;
-    padding: 40px;
-    border-radius: 10px;
-}
-form>div>input{
-    margin: 10px;
-    padding: 10px;
-    border-radius: 20px;
-    border: none;
-    width: 100%;
-}
-form>div{ padding-bottom: 20px;}
-
-form>button{
-    margin: 10px;
-    padding: 10px;
-    border-radius: 20px;
-    border: none;
-    width:50%;
-    background-color: #23EE4F;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
+/* =========================================
+   1. GÉNÉRAL
+   ========================================= */
+   body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-
-
-/* Styles de la navigation */
-footer, header {
-    background-color: #212529;
-    color: white;
-    position: relative;
-    width: 100%;
-    padding: 20px;
-    top: 0px;
-}
-
-.container{
-    display: flex;
-}
-.navigation {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    margin-left: 80px;
-}
-
-.navigation li {
-    list-style: none;
-    margin: 0 15px;
-}
-
-.navigation a {
-    color: white;
-    text-decoration: none;
-    padding: 10px 15px;
-    display: block;
-}
-
-.navigation a:hover, .navigation .dropdown:hover > a {
-    background-color: #23EE4F;
-    border-radius: 5px;
-}
-
-
-
-
-
-/* a voir */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: white;
-    min-width: 160px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    z-index: 1;
-    list-style: none;
-    padding: 0;
-}
-
-.dropdown-content li {
-    border-bottom: 1px solid #ddd;
-}
-
-.dropdown-content li:last-child {
-    border-bottom: none;
-}
-
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-.dropdown-content a:hover {
-    background-color: #f1f1f1;
-}
-
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-.user-menu {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-}
-
-.user-menu .dropdown {
-    position: relative;
-}
-
-.user-menu .dropdown-content {
-    right: 0;
-    left: auto;
-}
-
+/* =========================================
+   2. HEADER & NAVIGATION
+   ========================================= */
 .logo {
-    width: 50px;
+    height: 40px;
 }
 
-footer {
-    text-align: center;
-}
-
-.footer-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.footer-left, .footer-right {
-    padding: 10px;
-}
-
-.footer-left a {
+/* =========================================
+   HEADER
+   ========================================= */
+.navbar {
+    background-color: #333;
     color: white;
-    text-decoration: none;
 }
 
-.footer-left a:hover {
-    text-decoration: underline;
+.navbar .nav-link {
+    color: white;
+    transition: color 0.3s;
 }
+
+.navbar .nav-link:hover {
+    color: #23EE4F;
+}
+
+.navbar .btn-success {
+    background-color: #23EE4F;
+    border: none;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.navbar .btn-success:hover {
+    background-color: #1DBA3A;
+    transform: translateY(-2px);
+}
+
+/* =========================================
+   3. PAGE D'ACCUEIL
+   ========================================= */
+/* Section d'introduction */
 .intro {
     position: relative;
     text-align: center;
+    background-color: #333;
     color: white;
+    padding: 50px 0;
+}
+
+.intro h1, .intro h2 {
+    margin: 0;
+}
+
+.intro h1 {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.intro h2 {
+    font-size: 1.5rem;
+    font-weight: 300;
 }
 
 .intro-image {
     width: 100%;
-    height: 400px;
-    object-fit: cover;
 }
 
 .intro-text {
@@ -193,7 +76,7 @@ footer {
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.5);
-    padding: 20px;
+    padding: 40px;
     border-radius: 10px;
 }
 
@@ -204,41 +87,190 @@ footer {
     border: none;
     cursor: pointer;
     border-radius: 20px;
+    transition: background-color 0.3s;
 }
 
 .intro-button:hover {
     background-color: rgb(54, 140, 58);
 }
 
-.section-title {
-    text-align: center;
-    margin-top: 20px;
+.intro .btn-success {
+    background-color: #23EE4F;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
-.map-container {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
+.intro .btn-success:hover {
+    background-color: #1DBA3A;
+    transform: translateY(-2px);
 }
 
-.map-image {
-    width: 80%;
-    max-width: 900px;
+/* =========================================
+   4. CARTE ET BOUTIQUES
+   ========================================= */
+/* Carte OpenStreetMap */
+#map {
+    height: 500px;
+    min-height: 500px;
+    background-color: #f0f0f0;
 }
 
-.shop-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
+/* Personnalisation Leaflet */
+.leaflet-popup-content {
+    min-width: 200px;
 }
 
-.shop-item {
-    background: #f8f8f8;
-    padding: 15px;
+/* Transition des cartes au survol */
+.transition-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.transition-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card {
     border-radius: 10px;
-    text-align: center;
-    width: 200px;
-    box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.card .card-body {
+    background-color: #f8f9fa;
+}
+
+.card .card-footer {
+    background-color: #333;
+    color: white;
+}
+
+.card .btn-outline-primary {
+    border-color: #23EE4F;
+    color: #23EE4F;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.card .btn-outline-primary:hover {
+    background-color: #23EE4F;
+    color: white;
+}
+
+/* =========================================
+   5. RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+    .intro-text {
+        padding: 20px;
+        width: 80%;
+    }
+    
+    .intro-text h1 {
+        font-size: 1.8rem;
+    }
+    
+    .intro-text h2 {
+        font-size: 1.2rem;
+    }
+
+    .intro h1 {
+        font-size: 2.5rem;
+    }
+
+    .intro h2 {
+        font-size: 1.2rem;
+    }
+}
+/* =========================================
+   6. PAGE DE CONNEXION
+   ========================================= */
+   .login-card {
+    max-width: 450px;
+    margin: 0 auto;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background-color: #333; /* Couleur de fond sombre */
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.login-card .card-header {
+    background-color: #444; /* Couleur légèrement plus claire pour le header */
+    color: #fff;
+    padding: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.login-card .card-body {
+    background-color: #f8f9fa; /* Couleur claire pour le contraste */
+    padding: 30px;
+}
+
+.form-control {
+    border: 2px solid #ccc;
+    border-radius: 25px;
+    padding: 10px 15px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #23EE4F; /* Couleur verte pour le focus */
+    box-shadow: 0 0 5px rgba(35, 238, 79, 0.5);
+}
+
+.btn-success {
+    background-color: #23EE4F;
+    border: none;
+    padding: 10px 15px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-success:hover {
+    background-color: #1dbb3a;
+    transform: translateY(-2px);
+}
+
+.btn-success:active {
+    background-color: #1dbb3a;
+    transform: translateY(0);
+}
+
+.alert {
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+/* Responsive pour page de connexion */
+@media (max-width: 576px) {
+    .card {
+        border-radius: 0;
+        margin: 0 -15px;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    .login-card {
+        margin: 0 15px;
+    }
 }

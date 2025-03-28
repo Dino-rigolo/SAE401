@@ -2,8 +2,7 @@
 
 require_once 'ControllerException.class.php';
 require_once __DIR__ . '/../bootstrap.php';
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+
 /**
  * Classe Controller principale
  * 
@@ -22,6 +21,17 @@ class Controller {
      * Constructeur du contrôleur
      */
     public function __construct($request_params = []) {
+        // Démarrer la session si ce n'est pas déjà fait
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        // Vérifier si l'utilisateur est déjà connecté via session
+        if (!isset($_SESSION['employee'])) {
+            // Sinon, vérifier s'il y a un cookie d'authentification
+            $this->checkAuthCookie();
+        }
+        
         global $entityManager;
         $this->entityManager = $entityManager;
         $this->request = $_SERVER['REQUEST_URI'];
@@ -41,6 +51,85 @@ class Controller {
         }
         
         $this->parseRequest();
+    }
+    
+    /**
+     * Vérifie le cookie d'authentification
+     */
+    private function checkAuthCookie() {
+        if (isset($_COOKIE['sae401_auth'])) {
+            try {
+                // Décoder les données du cookie
+                $cookieData = json_decode(base64_decode($_COOKIE['sae401_auth']), true);
+                
+                // Vérifier que les données nécessaires sont présentes
+                if (!isset($cookieData['id']) || !isset($cookieData['email']) || 
+                    !isset($cookieData['expires']) || !isset($cookieData['hash'])) {
+                    // Cookie invalide, le supprimer
+                    setcookie('sae401_auth', '', time() - 3600, '/');
+                    return;
+                }
+                
+                // Vérifier si le cookie a expiré
+                if ($cookieData['expires'] < time()) {
+                    // Cookie expiré, le supprimer
+                    setcookie('sae401_auth', '', time() - 3600, '/');
+                    return;
+                }
+                
+                // Récupérer les données de l'employé pour vérifier le hash
+                $apiUrl = "https://clafoutis.alwaysdata.net/SAE401/api/ApiEmployees.php?action=getbyid&id=" . urlencode($cookieData['id']);
+                $ch = curl_init($apiUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $response = curl_exec($ch);
+                curl_close($ch);
+                
+                $employee = json_decode($response, true);
+                
+                // Vérifier que l'employé existe et que le hash correspond
+                if (!$employee || isset($employee['error'])) {
+                    setcookie('sae401_auth', '', time() - 3600, '/');
+                    return;
+                }
+                
+                // Recalculer le hash pour vérifier
+                $expectedHash = hash('sha256', $employee['employee_id'] . $employee['employee_password'] . 'SAE401_SALT');
+                
+                // Si le hash correspond, connecter l'utilisateur
+                if ($cookieData['hash'] === $expectedHash) {
+                    $_SESSION['employee'] = [
+                        'employee_id' => $employee['employee_id'],
+                        'employee_name' => $employee['employee_name'],
+                        'employee_email' => $employee['employee_email'],
+                        'employee_role' => $employee['employee_role'],
+                        'store_id' => isset($employee['store_id']) ? $employee['store_id'] : null
+                    ];
+                    
+                    // Optionnel : renouveler le cookie pour prolonger la connexion
+                    $cookieData['expires'] = time() + (30 * 24 * 60 * 60);
+                    $cookieValue = base64_encode(json_encode($cookieData));
+                    
+                    setcookie(
+                        'sae401_auth', 
+                        $cookieValue, 
+                        [
+                            'expires' => time() + (30 * 24 * 60 * 60),
+                            'path' => '/',
+                            'domain' => '',
+                            'secure' => true,
+                            'httponly' => true,
+                            'samesite' => 'Lax'
+                        ]
+                    );
+                } else {
+                    // Hash invalide, supprimer le cookie
+                    setcookie('sae401_auth', '', time() - 3600, '/');
+                }
+            } catch (Exception $e) {
+                // En cas d'erreur, supprimer le cookie
+                setcookie('sae401_auth', '', time() - 3600, '/');
+            }
+        }
     }
     
     /**
@@ -75,10 +164,6 @@ class Controller {
      * Exécute l'action demandée
      */
     public function execute() {
-        // Pour le débogage
-        error_log("Action : " . $this->action);
-        error_log("Méthode HTTP : " . $_SERVER['REQUEST_METHOD']);
-        
         try {
             // Vérifier si l'utilisateur est connecté
             $isConnected = isset($_SESSION['employee']);
@@ -178,15 +263,11 @@ class Controller {
      */
     private function doLogin() {
         try {
-            // Log de début
-            error_log("--- DÉBUT DE LA MÉTHODE doLogin() ---");
-            
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Récupérer les valeurs des champs du formulaire
                 $email = isset($_POST['email']) ? $_POST['email'] : '';
                 $password = isset($_POST['password']) ? $_POST['password'] : '';
-                
-                error_log("Email: $email, Password: $password");
+                $remember = isset($_POST['remember']) ? true : false;
                 
                 if (empty($email) || empty($password)) {
                     throw new Exception("Veuillez fournir un email et un mot de passe");
@@ -194,27 +275,23 @@ class Controller {
                 
                 // Appel à l'API
                 $apiUrl = "https://clafoutis.alwaysdata.net/SAE401/api/ApiEmployees.php?action=getbyemail&email=" . urlencode($email);
-                error_log("URL de l'API: $apiUrl");
                 
                 $ch = curl_init($apiUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 $response = curl_exec($ch);
                 
                 if (curl_errno($ch)) {
-                    throw new Exception("Erreur cURL: " . curl_error($ch));
+                    throw new Exception("Erreur de connexion à l'API");
                 }
                 
                 curl_close($ch);
-                error_log("Réponse API: $response");
                 
                 // Traiter la réponse JSON
                 $employee = json_decode($response, true);
                 
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new Exception("Erreur de décodage JSON: " . json_last_error_msg());
+                    throw new Exception("Erreur de traitement de la réponse");
                 }
-                
-                error_log("Données employé: " . print_r($employee, true));
                 
                 // Vérifier les données de l'employé
                 if (isset($employee['error'])) {
@@ -236,9 +313,37 @@ class Controller {
                         'store_id' => isset($employee['store_id']) ? $employee['store_id'] : null
                     ];
                     
-                    $_SESSION['success'] = "Connexion réussie";
+                    // Si "Remember me" est coché, créer un cookie
+                    if ($remember) {
+                        // Créer les données à stocker dans le cookie
+                        $cookieData = [
+                            'id' => $employee['employee_id'],
+                            'email' => $employee['employee_email'],
+                            // Timestamp pour vérifier la date d'expiration
+                            'expires' => time() + (30 * 24 * 60 * 60), // 30 jours
+                            // Hash unique pour renforcer la sécurité
+                            'hash' => hash('sha256', $employee['employee_id'] . $employee['employee_password'] . 'SAE401_SALT')
+                        ];
+                        
+                        // Encoder et chiffrer les données
+                        $cookieValue = base64_encode(json_encode($cookieData));
+                        
+                        // Créer le cookie qui expire dans 30 jours
+                        setcookie(
+                            'sae401_auth', 
+                            $cookieValue, 
+                            [
+                                'expires' => time() + (30 * 24 * 60 * 60), // 30 jours
+                                'path' => '/',
+                                'domain' => '',
+                                'secure' => true,    // Cookie uniquement via HTTPS
+                                'httponly' => true,  // Non accessible via JavaScript
+                                'samesite' => 'Lax' // Protection CSRF (Lax pour permettre les liens entrants)
+                            ]
+                        );
+                    }
                     
-                    error_log("Session après connexion: " . print_r($_SESSION, true));
+                    $_SESSION['success'] = "Connexion réussie";
                     
                     // Redirection
                     header('Location: /SAE401/home');
@@ -246,11 +351,8 @@ class Controller {
                 } else {
                     throw new Exception("Mot de passe incorrect");
                 }
-            } else {
-                error_log("Méthode HTTP incorrecte: " . $_SERVER['REQUEST_METHOD']);
             }
         } catch (Exception $e) {
-            error_log("Exception dans doLogin: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
             header('Location: /SAE401/connexion');
             exit;
@@ -261,10 +363,16 @@ class Controller {
      * Déconnecte l'utilisateur
      */
     private function doLogout() {
-        session_unset();
-        session_destroy();
-        header('Location: /SAE401/home');
-        exit;
+    // Supprimer le cookie d'authentification
+    setcookie('sae401_auth', '', time() - 3600, '/');
+    
+    // Détruire la session
+    session_unset();
+    session_destroy();
+    
+    // Rediriger vers la page d'accueil
+    header('Location: /SAE401/home');
+    exit;
     }
     
     /**
@@ -273,7 +381,7 @@ class Controller {
     private function showHome() {
         require_once __DIR__ . '/../view/ViewHome.php';
     }
-    
+
     /**
      * Affiche la page du catalogue
      */
