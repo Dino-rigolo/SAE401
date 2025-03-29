@@ -6,7 +6,7 @@ include_once('www/header.inc.php');
     <h2>Welcome to</h2>
     <h1>BikeStores</h1>
     <h2>Ride Beyond Limits</h2>
-    <button class="btn btn-success rounded-pill mt-3 px-4 py-2">Our bikes</button>
+    <a href="/SAE401/catalogue" class="btn btn-success rounded-pill mt-3 px-4 py-2">Our bikes</a>
 </div>
 
 <!-- Section des magasins -->
@@ -54,7 +54,7 @@ include_once('www/header.inc.php');
         // Initialiser la carte
         map = L.map('map', {
             center: [46.603354, 1.888334],
-            zoom: 5,
+            zoom: 6,
             zoomControl: true
         });
         

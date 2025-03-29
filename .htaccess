@@ -6,7 +6,10 @@ RewriteCond %{REQUEST_URI} \.(css|js|jpg|jpeg|png|gif|ico)$ [OR]
 RewriteCond %{REQUEST_URI} ^/SAE401/www/
 RewriteRule .* - [L]
 
-# Règles pour les API routes
+# Placer cette règle avant les règles API
+RewriteRule ^shop/([0-9]+)/?$ index.php?action=shop&id=$1 [QSA,L]
+
+# Ensuite les règles API
 # Routes pour les marques (Brands)
 # GET - Récupérer toutes les marques
 RewriteRule ^api/brands/?$ api/ApiBrands.php?action=getall [L,QSA]

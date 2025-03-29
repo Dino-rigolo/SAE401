@@ -3,12 +3,10 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 
-require_once '../vendor/autoload.php'; // Assurez-vous que l'autoload de Composer est inclus
-require_once '../src/Entity/Categories.php';
-require_once '../src/Entity/Products.php';
-require_once '../src/Entity/Brands.php';
-require_once '../bootstrap.php'; // Fichier pour initialiser Doctrine
+require_once '../bootstrap.php'; // Ce fichier initialise déjà Doctrine
 
+// Supprimez toutes les importations redondantes des entités
+// Ne gardez que ces imports de classes
 use Entity\Products;
 use Entity\Brands;
 use Entity\Categories;
@@ -17,12 +15,12 @@ define('API_KEY', 'e8f1997c763');
 
 $request_method = $_SERVER["REQUEST_METHOD"];
 
+// Fonction simplifiée pour valider l'API Key
 function validateApiKey() {
+    if($_SERVER["REQUEST_METHOD"] == "GET") return;
+    
     $headers = getallheaders();
-    if($_SERVER["REQUEST_METHOD"]=="GET"){
-    return;
-    }
-    if (!isset($headers['Api'])||$headers['Api'] != API_KEY) {
+    if (!isset($headers['Api']) || $headers['Api'] != API_KEY) {
         header('HTTP/1.0 401 Unauthorized');
         echo json_encode(['message' => 'Method Not Allowed']);
         exit();
@@ -36,13 +34,108 @@ $request = explode('/', trim($path_info, '/'));
 switch ($request_method) {
     case 'GET':
         try {
+            // Gestion de l'action getall simplifiée
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "getall") {
-                $products = $entityManager->getRepository(Products::class)->findAll();
-                $productNames = array_map(function($product) {
-                    return $product->getProductName();
-                }, $products);
-                echo json_encode($productNames);
-            } elseif (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "getbyid" && !empty($_REQUEST["id"])) {
+                global $entityManager;
+                
+                // Simplification de la requête avec un seul QueryBuilder
+                $qb = $entityManager->createQueryBuilder();
+                $qb->select('p')
+                ->from('Entity\Products', 'p')  // Changez 'src\Entity\Products' en 'Entity\Products'
+                ->leftJoin('p.brand', 'b')
+                ->leftJoin('p.category', 'c');
+                
+                // Ajout des filtres seulement s'ils sont définis
+                if (!empty($_REQUEST["brand"])) {
+                    $qb->andWhere('b.brand_id = :brand')
+                       ->setParameter('brand', $_REQUEST["brand"]);
+                }
+                
+                if (!empty($_REQUEST["category"])) {
+                    $qb->andWhere('c.category_id = :category')
+                       ->setParameter('category', $_REQUEST["category"]);
+                }
+                
+                if (!empty($_REQUEST["model_year"])) {
+                    $qb->andWhere('p.model_year = :model_year')
+                       ->setParameter('model_year', $_REQUEST["model_year"]);
+                }
+                
+                if (!empty($_REQUEST["min_price"])) {
+                    $qb->andWhere('p.list_price >= :min_price')
+                       ->setParameter('min_price', $_REQUEST["min_price"]);
+                }
+                
+                if (!empty($_REQUEST["max_price"])) {
+                    $qb->andWhere('p.list_price <= :max_price')
+                       ->setParameter('max_price', $_REQUEST["max_price"]);
+                }
+                
+                // Exécution de la requête
+                error_log("Paramètres reçus dans getall: " . json_encode($_REQUEST));
+                $query = $qb->getQuery();
+$sql = $query->getSQL();
+$params = $query->getParameters();
+error_log("SQL: " . $sql);
+error_log("Paramètres: " . json_encode($params->map(function($p) { return $p->getValue(); })->toArray()));
+                
+                $products = $qb->getQuery()->getResult();
+                
+                // Transformation simplifiée des objets en tableau JSON
+                $productData = [];
+                foreach ($products as $product) {
+                    $productData[] = [
+                        'id' => $product->getProductId(),
+                        'name' => $product->getProductName(),
+                        'brand' => $product->getBrand()->getBrandName(),
+                        'category' => $product->getCategory()->getCategoryName(),
+                        'model_year' => $product->getModelYear(),
+                        'price' => $product->getListPrice()
+                    ];
+                }
+                
+                echo json_encode($productData);
+                exit();
+            } 
+            // Gestion de getfilters simplifiée
+            elseif ($_REQUEST["action"] == "getfilters") {
+                header('Content-Type: application/json');
+                try {
+                    // Utilisez directement SQL pour éviter les problèmes de doublon de classe
+                    $conn = $entityManager->getConnection();
+                    
+                    // Récupérer les marques sans doublons - sélectionne la première occurrence de chaque nom
+                    $brandsSql = "SELECT MIN(brand_id) as id, brand_name as name 
+                                 FROM brands 
+                                 GROUP BY brand_name 
+                                 ORDER BY name";
+                    $brands = $conn->executeQuery($brandsSql)->fetchAllAssociative();
+                    
+                    // Récupérer les catégories sans doublons
+                    $categoriesSql = "SELECT MIN(category_id) as id, category_name as name 
+                                     FROM categories 
+                                     GROUP BY category_name 
+                                     ORDER BY name";
+                    $categories = $conn->executeQuery($categoriesSql)->fetchAllAssociative();
+                    
+                    // Récupérer les années modèles
+                    $yearsSql = "SELECT DISTINCT model_year FROM products ORDER BY model_year DESC";
+                    $yearsResult = $conn->executeQuery($yearsSql)->fetchAllAssociative();
+                    $years = array_column($yearsResult, 'model_year');
+                    
+                    echo json_encode([
+                        'brands' => $brands,
+                        'categories' => $categories,
+                        'model_years' => $years
+                    ]);
+                } catch (Exception $e) {
+                    echo json_encode(['error' => $e->getMessage()]);
+                }
+                exit();
+            }
+            
+            // Reste du code inchangé
+            elseif (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "getbyid" && !empty($_REQUEST["id"])) {
                 $product = $entityManager->find(Products::class, $_REQUEST["id"]);
                 if ($product) {
                     echo json_encode([

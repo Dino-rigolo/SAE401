@@ -386,28 +386,34 @@ class Controller {
      * Affiche la page du catalogue
      */
     private function showCatalogue() {
-        // Récupérer les produits via l'API
-        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/products");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        $products = json_decode($response, true);
-        curl_close($ch);
-        
-        // Récupérer les catégories via l'API
-        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/categories");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        $categories = json_decode($response, true);
-        curl_close($ch);
-        
-        // Récupérer les marques via l'API
-        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/brands");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        $brands = json_decode($response, true);
-        curl_close($ch);
-        
-        require_once __DIR__ . '/../view/ViewCatalogue.php';
+    // Récupérer les produits via l'API
+    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/products");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    $products = json_decode($response, true);
+    curl_close($ch);
+    
+    // Récupérer les catégories via l'API
+    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/categories");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    $categories = json_decode($response, true);
+    curl_close($ch);
+    
+    // Récupérer les marques via l'API
+    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/brands");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    $brands = json_decode($response, true);
+    curl_close($ch);
+    
+    // Récupérer les filtres via l'API
+    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/ApiProducts.php?action=getfilters");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    $filters = json_decode($response, true);
+    curl_close($ch);
+    require_once __DIR__ . '/../view/ViewCatalogue.php';
     }
     
     /**
@@ -421,12 +427,37 @@ class Controller {
      * Affiche la page de la boutique
      */
     private function showShop() {
-        // Récupérer les produits via l'API
-        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/products");
+        if (!isset($this->id)) {
+            throw new ControllerException("ID de la boutique manquant", 400);
+        }
+        
+        // Utiliser le format d'URL correct pour l'API
+        $apiUrl = "https://clafoutis.alwaysdata.net/SAE401/api/ApiStores.php?action=getbyid&id=" . urlencode($this->id);
+        
+        // Ajouter des logs pour le débogage
+        error_log("Tentative d'accès à l'API: " . $apiUrl);
+        
+        $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
-        $products = json_decode($response, true);
+        
+        if ($response === false) {
+            error_log("Erreur cURL: " . curl_error($ch));
+            throw new ControllerException("Erreur de connexion à l'API", 500);
+        }
+        
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        error_log("Code de réponse HTTP: " . $httpCode);
+        
         curl_close($ch);
+        
+        $store = json_decode($response, true);
+        
+        // Vérifier si la réponse contient une erreur
+        if (isset($store['error'])) {
+            error_log("Erreur API: " . $store['error']);
+            throw new ControllerException($store['error'], 404);
+        }
         
         require_once __DIR__ . '/../view/ViewShop.php';
     }
@@ -521,11 +552,10 @@ class Controller {
         
         $errorMessage = $e->getMessage();
         
-        // Afficher la page d'erreur
+        // Instancier et afficher la page d'erreur
         require_once __DIR__ . '/../view/ViewError.php';
+        $errorView = new ViewError($statusCode, $errorMessage);
+        $errorView->display();
     }
 }
 
-// Instanciation et exécution du contrôleur
-$controller = new Controller();
-$controller->execute();
