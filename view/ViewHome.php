@@ -135,7 +135,7 @@ include_once('www/header.inc.php');
                         '</a>' +
                         '</div>' +
                         '<div class="card-footer bg-transparent">' +
-                        '<a href="/SAE401/shop/' + store.store_id + '" class="btn btn-outline-primary w-100">Voir détails</a>' +
+                        '<a href="/SAE401/shop/' + store.store_id + '" class="btn btn-outline-primary w-100">View details</a>' +
                         '</div>' +
                         '</div>' +
                         '</div>';
@@ -170,7 +170,7 @@ include_once('www/header.inc.php');
                                         '<div class="text-center">' +
                                         '<h5>' + store.store_name + '</h5>' +
                                         '<p>' + store.street + '<br>' + store.zip_code + ' ' + store.city + '</p>' +
-                                        '<a href="/SAE401/shop/' + store.store_id + '" class="btn btn-sm btn-primary">Voir la boutique</a>' +
+                                        '<a href="/SAE401/shop/' + store.store_id + '" class="btn btn-sm btn-success">View the shop</a>' +
                                         '</div>'
                                     );
                                 } else {

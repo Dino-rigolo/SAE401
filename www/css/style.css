@@ -14,6 +14,118 @@ svg{margin-right:15px;}
     height: 40px;
 }
 
+/* Trait de séparation sous le header */
+header {
+    border-bottom: 2px solid #23EE4F; /* Ligne verte qui correspond à votre thème */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet plus élégant */
+}
+
+/* Effet de survol pour les liens du header */
+.navbar-nav .nav-link {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #23EE4F !important; /* Le vert de votre thème */
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px; /* Ajuste la position de la ligne */
+    left: 0;
+    background-color: #23EE4F;
+    transition: width 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover::after {
+    width: 100%;
+}
+
+/* Cibler spécifiquement le lien du dropdown */
+#productsDropdown.nav-link.dropdown-toggle::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: #23EE4F;
+    transition: width 0.3s ease;
+}
+
+#productsDropdown.nav-link.dropdown-toggle:hover::after {
+    width: 100%;
+}
+
+/* Style pour les liens actifs dans le menu */
+.navbar-nav .nav-link.active {
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+.navbar-nav .nav-link.active::after {
+    width: 100%;
+    height: 2px;
+    background-color: #23EE4F;
+}
+
+/* Effet de survol pour le logo */
+.navbar-brand img {
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover img {
+    transform: scale(1.05); /* Léger agrandissement au survol */
+}
+
+/* Effet de survol pour les liens du footer */
+footer a {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: #23EE4F !important;
+    text-decoration: none;
+}
+
+footer a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: #23EE4F;
+    transition: width 0.3s ease;
+}
+
+footer a:hover::after {
+    width: 100%;
+}
+
+/* Style pour les liens actifs dans le footer */
+footer a.active {
+    color: #23EE4F !important;
+    font-weight: bold;
+}
+
+footer a.active::after {
+    width: 100%;
+    height: 1px;
+    background-color: #23EE4F;
+}
+
+/* Style pour l'élément de dropdown actif */
+.dropdown-item.active {
+    background-color: #23EE4F;
+    color: white;
+}
+
 /* =========================================
    HEADER
    ========================================= */
@@ -321,3 +433,39 @@ svg{margin-right:15px;}
         padding: 0 15px;
     }
 }
+
+.table-container {
+    max-height: 400px; /* Limite la hauteur du tableau */
+    overflow-y: auto; /* Ajoute un défilement vertical */
+    border: 1px solid #ddd; /* Ajoute une bordure pour délimiter */
+    border-radius: 5px; /* Coins arrondis */
+    padding: 10px; /* Espacement interne */
+    background-color: #fff; /* Fond blanc */
+}
+
+/* Style pour les icônes d'action */
+.icon-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.icon-action:hover {
+    transform: scale(1.2);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Animation spécifique pour chaque type d'action */
+.icon-action.delete-btn:hover svg {
+    fill: #ff0000 !important; /* Rouge plus vif au survol */
+    filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.5));
+}
+
+.icon-action:not(.delete-btn):hover svg {
+    fill: #007bff !important; /* Bleu plus vif au survol */
+    filter: drop-shadow(0 0 2px rgba(0, 123, 255, 0.5));
+}
+

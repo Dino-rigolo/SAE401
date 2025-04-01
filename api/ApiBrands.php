@@ -60,19 +60,26 @@ switch ($request_method) {
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "create") {
                 $data = json_decode(file_get_contents('php://input'), true);
+                
+                // Log pour débogage
+                error_log("Données reçues dans API: " . json_encode($data));
+                
                 if (isset($data['brand_name'])) {
                     $brand = new Brands();
                     $brand->setBrandName($data['brand_name']);
                     $entityManager->persist($brand);
                     $entityManager->flush();
-                    echo json_encode(['message' => 'Brand created']);
+                    
+                    echo json_encode(['message' => 'Brand created successfully']);
+                    http_response_code(201); // Created
                 } else {
-                    throw new Exception('Invalid input');
+                    throw new Exception('Brand name is required.');
                 }
             } else {
                 throw new Exception('Invalid action.');
             }
         } catch (Exception $e) {
+            http_response_code(400); // Bad Request
             echo json_encode(['error' => $e->getMessage()]);
         }
         break;

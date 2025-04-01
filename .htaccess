@@ -127,6 +127,16 @@ RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=update&id=$1 [L,QSA
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=delete&id=$1 [L,QSA]
 
+# Règle générale pour les actions add
+RewriteRule ^addbrands/?$ controller/index.php?action=addbrands [L,QSA]
+RewriteRule ^addcategories/?$ controller/index.php?action=addcategories [L,QSA]
+RewriteRule ^addshops/?$ controller/index.php?action=addshops [L,QSA]
+RewriteRule ^addproducts/?$ controller/index.php?action=addproducts [L,QSA]
+RewriteRule ^addstocks/?$ controller/index.php?action=addstocks [L,QSA]
+
+# Ou une règle plus générique
+RewriteRule ^add([a-zA-Z]+)/?$ index.php?action=add$1 [L,QSA]
+
 # Règle pour gérer les routes non-API (doit être en dernier)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f

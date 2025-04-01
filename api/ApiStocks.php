@@ -39,7 +39,10 @@ switch ($request_method) {
                 $stockData = array_map(function($stock) {
                     return [
                         'stock_id' => $stock->getStockId(),
+                        'store_id' => $stock->getStore()->getStoreId(),
+                        'store_name' => $stock->getStore()->getStoreName(),
                         'product_id' => $stock->getProduct()->getProductId(),
+                        'product_name' => $stock->getProduct()->getProductName(),
                         'quantity' => $stock->getQuantity()
                     ];
                 }, $stocks);

@@ -165,6 +165,21 @@ class Controller {
      */
     public function execute() {
         try {
+            // Obtenir l'action depuis l'URL
+            $this->action = isset($_REQUEST['action']) ? $_REQUEST['action'] : 'default';
+            
+            // Intercepter les actions d'ajout
+            if (preg_match('/^add(brands|categories|shops|products|stocks)$/', $this->action)) {
+                $this->handleAdd();
+                return;
+            }
+            
+            // Ajouter cette condition pour intercepter l'ajout d'employés
+            if ($this->action === 'addemployees') {
+                $this->addEmployees();
+                return;
+            }
+            
             // Vérifier si l'utilisateur est connecté
             $isConnected = isset($_SESSION['employee']);
             $isEmployee = $isConnected && isset($_SESSION['employee']);
@@ -172,7 +187,7 @@ class Controller {
             $isIT = $isConnected && isset($_SESSION['employee']) && $_SESSION['employee']['employee_role'] === 'it';
             
             // Pages accessibles sans connexion
-            $publicPages = ['home', 'catalogue', 'connexion', 'shop'];
+            $publicPages = ['home', 'catalogue', 'connexion', 'shop', 'terms'];
             
             // Si l'utilisateur n'est pas connecté et tente d'accéder à une page protégée
             if (!$isConnected && !in_array($this->action, $publicPages)) {
@@ -203,6 +218,10 @@ class Controller {
                         $this->showShop();
                         break;
                         
+                    case 'terms':
+                        $this->showTerms();
+                        break;
+
                     default:
                         throw new ControllerException("Page non trouvée", 404);
                 }
@@ -246,10 +265,50 @@ class Controller {
                         }
                         $this->showEmployees();
                         break;
+
+                    case 'brands':
+                        $this->showBrands();
+                        break;
+                    case 'categories':
+                        $this->showCategories();
+                        break;
+                    case 'shops':
+                        $this->showShops();
+                        break;
+                    case 'products':
+                        if (isset($_GET['type'])) {
+                            switch ($_GET['type']) {
+                                case 'brands':
+                                    $this->showBrands();
+                                    break;
+                                case 'categories':
+                                    $this->showCategories();
+                                    break;
+                                case 'shops':
+                                    $this->showShops();
+                                    break;
+                                case 'stocks':
+                                    $this->showStocks();
+                                    break;
+                                default:
+                                    $this->showProducts(); // Par défaut: afficher les produits
+                                    break;
+                            }
+                        } else {
+                            $this->showProducts(); // Si pas de type spécifié
+                        }
+                        break;
+                    case 'stocks':
+                        $this->showStocks();
+                        break;
                         
                     default:
                         throw new ControllerException("Page non trouvée", 404);
                 }
+            }
+            if (strpos($this->action, 'add') === 0) {
+                $this->handleAdd();
+                return;
             }
         } catch (ControllerException $e) {
             $this->handleError($e);
@@ -544,6 +603,13 @@ class Controller {
     }
     
     /**
+     * Affiche la page des conditions d'utilisation
+     */
+    private function showTerms() {
+        require_once __DIR__ . '/../view/ViewTermsConditions.php';
+    }
+    
+    /**
      * Gère les erreurs
      */
     private function handleError(ControllerException $e) {
@@ -556,6 +622,317 @@ class Controller {
         require_once __DIR__ . '/../view/ViewError.php';
         $errorView = new ViewError($statusCode, $errorMessage);
         $errorView->display();
+    }
+
+    /**
+     * Méthode commune pour afficher la page des produits 
+     * avec un type spécifique (brands, categories, etc.)
+     */
+    private function showProductsPage($type) {
+        // Définir le type dans $_GET pour que la vue puisse l'utiliser
+        $_GET['type'] = $type;
+        
+        // Titres en fonction du type
+        $titles = [
+            'brands' => 'Brands',
+            'categories' => 'Categories',
+            'shops' => 'Shops',
+            'products' => 'Products',
+            'stocks' => 'Stocks'
+        ];
+        
+        // Structure des données pour chaque type
+        $structure = [
+            'brands' => [
+                'columns' => ['ID', 'Brand Name'],
+                'fields' => ['brand_id', 'brand_name'],
+                'id_field' => 'brand_id',
+                'form_fields' => [
+                    ['name' => 'brand_name', 'label' => 'Brand Name', 'type' => 'text']
+                ]
+            ],
+            'categories' => [
+                'columns' => ['ID', 'Category Name'],
+                'fields' => ['category_id', 'category_name'],
+                'id_field' => 'category_id',
+                'form_fields' => [
+                    ['name' => 'category_name', 'label' => 'Category Name', 'type' => 'text']
+                ]
+            ],
+            'shops' => [
+                'columns' => ['ID', 'Store Name', 'Phone', 'Email', 'Address'],
+                'fields' => ['store_id', 'store_name', 'phone', 'email', 'street'],
+                'id_field' => 'store_id',
+                'form_fields' => [
+                    ['name' => 'store_name', 'label' => 'Store Name', 'type' => 'text'],
+                    ['name' => 'phone', 'label' => 'Phone', 'type' => 'tel'],
+                    ['name' => 'email', 'label' => 'Email', 'type' => 'email'],
+                    ['name' => 'street', 'label' => 'Street Address', 'type' => 'text'],
+                    ['name' => 'city', 'label' => 'City', 'type' => 'text'],
+                    ['name' => 'state', 'label' => 'State', 'type' => 'text'],
+                    ['name' => 'zip_code', 'label' => 'Zip Code', 'type' => 'text']
+                ],
+                // Ajoutez cette section pour la gestion des employés
+                'employee_management' => true
+            ],
+            'products' => [
+                'columns' => ['ID', 'Product Name', 'Brand', 'Category', 'Model Year', 'Price'],
+                'fields' => ['product_id', 'product_name', 'brand_name', 'category_name', 'model_year', 'list_price'],
+                'id_field' => 'product_id',
+                'form_fields' => [
+                    ['name' => 'product_name', 'label' => 'Product Name', 'type' => 'text'],
+                    ['name' => 'brand_id', 'label' => 'Brand', 'type' => 'select', 'source' => 'brands'],
+                    ['name' => 'category_id', 'label' => 'Category', 'type' => 'select', 'source' => 'categories'],
+                    ['name' => 'model_year', 'label' => 'Model Year', 'type' => 'number'],
+                    ['name' => 'list_price', 'label' => 'Price', 'type' => 'number', 'step' => '0.01']
+                ]
+            ],
+            'stocks' => [
+                'columns' => ['ID', 'Store', 'Product', 'Quantity'],
+                'fields' => ['stock_id', 'store_name', 'product_name', 'quantity'],
+                'id_field' => 'stock_id',
+                'form_fields' => [
+                    ['name' => 'store_id', 'label' => 'Store', 'type' => 'select', 'source' => 'shops'],
+                    ['name' => 'product_id', 'label' => 'Product', 'type' => 'select', 'source' => 'products'],
+                    ['name' => 'quantity', 'label' => 'Quantity', 'type' => 'number']
+                ]
+            ]
+        ];
+        
+        // API endpoints
+        $api_endpoints = [
+            'brands' => 'https://clafoutis.alwaysdata.net/SAE401/api/brands',
+            'categories' => 'https://clafoutis.alwaysdata.net/SAE401/api/categories',
+            'shops' => 'https://clafoutis.alwaysdata.net/SAE401/api/stores',
+            'products' => 'https://clafoutis.alwaysdata.net/SAE401/api/products',
+            'stocks' => 'https://clafoutis.alwaysdata.net/SAE401/api/stocks'
+        ];
+        
+        // Récupérer les données via l'API
+        $data = [];
+        if (isset($api_endpoints[$type])) {
+            $ch = curl_init($api_endpoints[$type]);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($ch);
+            if ($response === false) {
+                error_log('Erreur cURL : ' . curl_error($ch));
+            } else {
+                $data = json_decode($response, true);
+                if ($data === null) {
+                    error_log('Erreur JSON : ' . json_last_error_msg());
+                }
+            }
+            curl_close($ch);
+        }
+        
+        // Pour les champs de type select, récupérer les données source
+        $select_options = [];
+        $current_structure = isset($structure[$type]) ? $structure[$type] : $structure['brands'];
+        $form_fields = $current_structure['form_fields'];
+        
+        foreach ($form_fields as $field) {
+            if (isset($field['type']) && $field['type'] === 'select' && isset($field['source'])) {
+                $source_type = $field['source'];
+                if (isset($api_endpoints[$source_type])) {
+                    $ch = curl_init($api_endpoints[$source_type]);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    $response = curl_exec($ch);
+                    if ($response !== false) {
+                        $select_options[$field['name']] = json_decode($response, true);
+                    }
+                    curl_close($ch);
+                }
+            }
+        }
+        
+        // Passer les données à la vue en tant que variables globales
+        $GLOBALS['product_data'] = $data;
+        $GLOBALS['product_structure'] = $structure;
+        $GLOBALS['product_select_options'] = $select_options;
+        $GLOBALS['product_title'] = isset($titles[$type]) ? $titles[$type] : 'Brands';
+        
+        require_once __DIR__ . '/../view/ViewProduct.php';
+    }
+
+    /**
+     * Affiche la page des marques
+     */
+    private function showBrands() {
+        $this->showProductsPage('brands');
+    }
+
+    /**
+     * Affiche la page des catégories
+     */
+    private function showCategories() {
+        $this->showProductsPage('categories');
+    }
+
+    /**
+     * Affiche la page des boutiques
+     */
+    private function showShops() {
+        $this->showProductsPage('shops');
+    }
+
+    /**
+     * Affiche la page des produits
+     */
+    private function showProducts() {
+        $this->showProductsPage('products');
+    }
+
+    /**
+     * Affiche la page des stocks
+     */
+    private function showStocks() {
+        $this->showProductsPage('stocks');
+    }
+
+    /**
+     * Gère l'ajout d'un nouvel élément
+     */
+    private function handleAdd() {
+        // Vérifier si l'utilisateur est connecté
+        if (!isset($_SESSION['employee'])) {
+            throw new ControllerException("Vous devez être connecté pour effectuer cette action", 401);
+        }
+        
+        // Récupérer le type d'élément à ajouter depuis l'URL
+        $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
+        $action = $urlParts[1] ?? ''; // ex: addbrands
+        $type = str_replace('add', '', $action); // ex: brands
+        
+        // Valider le type
+        $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks'];
+        if (!in_array($type, $validTypes)) {
+            throw new ControllerException("Type d'élément invalide", 400);
+        }
+        
+        // Vérifier que les données POST sont présentes
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            throw new ControllerException("Méthode non autorisée", 405);
+        }
+        
+        // Préparer l'URL de l'API
+        $apiUrls = [
+            'brands' => 'https://clafoutis.alwaysdata.net/SAE401/api/brands',
+            'categories' => 'https://clafoutis.alwaysdata.net/SAE401/api/categories',
+            'shops' => 'https://clafoutis.alwaysdata.net/SAE401/api/stores',
+            'products' => 'https://clafoutis.alwaysdata.net/SAE401/api/products',
+            'stocks' => 'https://clafoutis.alwaysdata.net/SAE401/api/stocks'
+        ];
+        
+        // Préparer les données pour l'API
+        $data = $_POST;
+        
+        // Ajouter le paramètre action=create pour l'API
+        $apiUrl = $apiUrls[$type] . '?action=create';
+        
+        // Envoyer à l'API
+        $ch = curl_init($apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Api: e8f1997c763' // Clé API
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
+        // Log pour le débogage
+        error_log("API Response ($type): " . $response);
+        error_log("HTTP Code: " . $httpCode);
+        
+        curl_close($ch);
+        
+        // Vérifier la réponse
+        if ($httpCode >= 400) {
+            $error = json_decode($response, true);
+            throw new ControllerException("Erreur lors de l'ajout: " . ($error['error'] ?? "Erreur inconnue"), 400);
+        }
+        
+        // Redirection vers la liste avec message de succès
+        header("Location: /SAE401/products?type=$type&success=1");
+        exit;
+    }
+
+    /**
+     * Ajoute un nouvel employé
+     */
+    private function addEmployees() {
+        // Validation des droits d'accès
+        if (!isset($_SESSION['employee'])) {
+            throw new ControllerException("Accès non autorisé", 401);
+        }
+        
+        $userRole = $_SESSION['employee']['employee_role'];
+        $userStoreId = $_SESSION['employee']['store_id'] ?? null;
+        $targetStoreId = isset($_POST['store_id']) ? (int)$_POST['store_id'] : null;
+        
+        // Vérifier les permissions
+        $hasPermission = false;
+        if ($userRole === 'it') {
+            $hasPermission = true; // IT peut ajouter dans tous les magasins
+        } else if ($userRole === 'chief' && $userStoreId === $targetStoreId) {
+            $hasPermission = true; // Chief peut ajouter dans son magasin
+        }
+        
+        if (!$hasPermission) {
+            throw new ControllerException("Vous n'avez pas les droits pour ajouter un employé dans ce magasin", 403);
+        }
+        
+        // Validation des données
+        if (!isset($_POST['employee_name']) || !isset($_POST['employee_email']) || 
+            !isset($_POST['employee_password']) || !isset($_POST['employee_role']) || 
+            !isset($_POST['store_id'])) {
+            throw new ControllerException("Données incomplètes", 400);
+        }
+        
+        // Valider que le rôle est autorisé
+        $validRoles = ['employee'];
+        if ($userRole === 'it') {
+            $validRoles[] = 'chief'; // IT peut ajouter des chiefs
+        }
+        
+        if (!in_array($_POST['employee_role'], $validRoles)) {
+            throw new ControllerException("Rôle non autorisé", 400);
+        }
+        
+        // Préparation des données
+        $data = [
+            'employee_name' => htmlspecialchars($_POST['employee_name']),
+            'employee_email' => htmlspecialchars($_POST['employee_email']),
+            'employee_password' => $_POST['employee_password'], // Idéalement à hacher
+            'employee_role' => $_POST['employee_role'],
+            'store_id' => (int)$_POST['store_id']
+        ];
+        
+        // Envoi à l'API
+        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/employees?action=create");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Api: e8f1997c763' // Clé API
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        // Vérifier la réponse
+        if ($httpCode >= 400) {
+            $error = json_decode($response, true);
+            throw new ControllerException("Erreur lors de l'ajout: " . ($error['error'] ?? "Erreur inconnue"), 400);
+        }
+        
+        // Redirection vers la liste des magasins
+        header("Location: /SAE401/products?type=shops&success=1");
+        exit;
     }
 }
 

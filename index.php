@@ -25,3 +25,4 @@ if (!isset($_GET['action']) && $_SERVER['REQUEST_URI'] == '/SAE401/' || $_SERVER
 $controller = new Controller($_GET);
 $controller->execute();
 ?>
+

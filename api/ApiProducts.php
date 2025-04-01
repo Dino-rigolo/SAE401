@@ -82,17 +82,18 @@ error_log("Paramètres: " . json_encode($params->map(function($p) { return $p->g
                 $products = $qb->getQuery()->getResult();
                 
                 // Transformation simplifiée des objets en tableau JSON
-                $productData = [];
-                foreach ($products as $product) {
-                    $productData[] = [
-                        'id' => $product->getProductId(),
-                        'name' => $product->getProductName(),
-                        'brand' => $product->getBrand()->getBrandName(),
-                        'category' => $product->getCategory()->getCategoryName(),
+                $productData = array_map(function($product) {
+                    return [
+                        'product_id' => $product->getProductId(),
+                        'product_name' => $product->getProductName(),
+                        'brand_id' => $product->getBrand()->getBrandId(),
+                        'brand_name' => $product->getBrand()->getBrandName(),
+                        'category_id' => $product->getCategory()->getCategoryId(),
+                        'category_name' => $product->getCategory()->getCategoryName(),
                         'model_year' => $product->getModelYear(),
-                        'price' => $product->getListPrice()
+                        'list_price' => $product->getListPrice()
                     ];
-                }
+                }, $products);
                 
                 echo json_encode($productData);
                 exit();

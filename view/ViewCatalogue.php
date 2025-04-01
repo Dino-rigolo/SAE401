@@ -220,10 +220,10 @@ include_once('www/header.inc.php');
                             <div class="card shadow-sm h-100">
                                 <img src="/SAE401/www/images/velosport.jpg" class="card-img-top" alt="${product.name || 'No name'}">
                                 <div class="card-body text-center">
-                                    <h5 class="card-title text-truncate">${product.name || 'No name'}</h5>
-                                    <p class="text-muted mb-1">${product.brand || 'Unknown brand'} - ${product.category || 'Unknown category'}</p>
+                                    <h5 class="card-title text-truncate">${product.product_name || 'No name'}</h5>
+                                    <p class="text-muted mb-1">${product.brand_name || 'Unknown brand'} - ${product.category_name || 'Unknown category'}</p>
                                     <p class="card-text">Year: ${product.model_year || 'N/A'}</p>
-                                    <p class="fw-bold text-success">${product.price !== undefined && product.price !== null ? Number(product.price).toFixed(2) : 'N/A'}€</p>
+                                    <p class="fw-bold text-success">${product.list_price !== undefined && product.list_price !== null ? Number(product.list_price).toFixed(2) : 'N/A'}€</p>
                                 </div>
                             </div>
                         </div>

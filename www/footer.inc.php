@@ -4,7 +4,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <a href="/SAE401/home" class="text-white text-decoration-none">Terms & Conditions</a>
+                <a href="/SAE401/terms" class="text-white text-decoration-none <?php echo ($currentPath === 'terms') ? 'active' : ''; ?>">Terms & Conditions</a>
             </div>
             <div class="col-md-6 text-md-end">
                 <span>&copy; 2024 - 2025 BikeStores</span>
