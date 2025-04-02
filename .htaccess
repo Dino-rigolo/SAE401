@@ -134,6 +134,30 @@ RewriteRule ^addshops/?$ controller/index.php?action=addshops [L,QSA]
 RewriteRule ^addproducts/?$ controller/index.php?action=addproducts [L,QSA]
 RewriteRule ^addstocks/?$ controller/index.php?action=addstocks [L,QSA]
 
+# Routes pour les actions de modification
+RewriteRule ^modifbrands/([0-9]+)/?$ controller/index.php?action=modifbrands&id=$1 [L,QSA]
+RewriteRule ^modifcategories/([0-9]+)/?$ controller/index.php?action=modifcategories&id=$1 [L,QSA]
+RewriteRule ^modifshops/([0-9]+)/?$ controller/index.php?action=modifshops&id=$1 [L,QSA]
+RewriteRule ^modifproducts/([0-9]+)/?$ controller/index.php?action=modifproducts&id=$1 [L,QSA]
+RewriteRule ^modifstocks/([0-9]+)/?$ controller/index.php?action=modifstocks&id=$1 [L,QSA]
+RewriteRule ^modifemployees/([0-9]+)/?$ controller/index.php?action=modifemployees&id=$1 [L,QSA]
+
+# Routes pour les actions de mise à jour
+RewriteRule ^updatebrands/?$ controller/index.php?action=updatebrands [L,QSA]
+RewriteRule ^updatecategories/?$ controller/index.php?action=updatecategories [L,QSA]
+RewriteRule ^updateshops/?$ controller/index.php?action=updateshops [L,QSA]
+RewriteRule ^updateproducts/?$ controller/index.php?action=updateproducts [L,QSA]
+RewriteRule ^updatestocks/?$ controller/index.php?action=updatestocks [L,QSA]
+RewriteRule ^updateemployees/?$ controller/index.php?action=updateemployees [L,QSA]
+
+# Routes pour les actions de suppression
+RewriteRule ^deletebrands/([0-9]+)/?$ controller/index.php?action=deletebrands&id=$1 [L,QSA]
+RewriteRule ^deletecategories/([0-9]+)/?$ controller/index.php?action=deletecategories&id=$1 [L,QSA]
+RewriteRule ^deleteshops/([0-9]+)/?$ controller/index.php?action=deleteshops&id=$1 [L,QSA]
+RewriteRule ^deleteproducts/([0-9]+)/?$ controller/index.php?action=deleteproducts&id=$1 [L,QSA]
+RewriteRule ^deletestocks/([0-9]+)/?$ controller/index.php?action=deletestocks&id=$1 [L,QSA]
+RewriteRule ^deleteemployees/([0-9]+)/?$ controller/index.php?action=deleteemployees&id=$1 [L,QSA]
+
 # Ou une règle plus générique
 RewriteRule ^add([a-zA-Z]+)/?$ index.php?action=add$1 [L,QSA]
 

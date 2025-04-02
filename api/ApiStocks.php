@@ -39,10 +39,10 @@ switch ($request_method) {
                 $stockData = array_map(function($stock) {
                     return [
                         'stock_id' => $stock->getStockId(),
-                        'store_id' => $stock->getStore()->getStoreId(),
-                        'store_name' => $stock->getStore()->getStoreName(),
-                        'product_id' => $stock->getProduct()->getProductId(),
-                        'product_name' => $stock->getProduct()->getProductName(),
+                        'store_id' => $stock->getStore() ? $stock->getStore()->getStoreId() : null,
+                        'store_name' => $stock->getStore() ? $stock->getStore()->getStoreName() : 'N/A',
+                        'product_id' => $stock->getProduct() ? $stock->getProduct()->getProductId() : null,
+                        'product_name' => $stock->getProduct() ? $stock->getProduct()->getProductName() : 'N/A',
                         'quantity' => $stock->getQuantity()
                     ];
                 }, $stocks);
@@ -52,11 +52,14 @@ switch ($request_method) {
                 if ($stock) {
                     echo json_encode([
                         'stock_id' => $stock->getStockId(),
-                        'product_id' => $stock->getProduct()->getProductId(),
+                        'store_id' => $stock->getStore() ? $stock->getStore()->getStoreId() : null,
+                        'store_name' => $stock->getStore() ? $stock->getStore()->getStoreName() : 'N/A',
+                        'product_id' => $stock->getProduct() ? $stock->getProduct()->getProductId() : null,
+                        'product_name' => $stock->getProduct() ? $stock->getProduct()->getProductName() : 'N/A',
                         'quantity' => $stock->getQuantity()
                     ]);
                 } else {
-                    throw new Exception('Stock not found.');
+                    throw new Exception('Stock not found');
                 }
             } else {
                 throw new Exception('Invalid action.');
@@ -69,20 +72,46 @@ switch ($request_method) {
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "create") {
                 $data = json_decode(file_get_contents('php://input'), true);
-                if (isset($data['product_id'], $data['quantity'])) {
+                
+                // Journaliser les données reçues pour le débogage
+                error_log("Données reçues pour la création de stock : " . json_encode($data));
+                
+                // Ajoutez ce log
+                error_log("ApiStocks - Données reçues pour création: " . json_encode($data));
+                
+                if (isset($data['store_id'], $data['product_id'], $data['quantity'])) {
+                    // Créer l'objet Stock
                     $stock = new Stocks();
-                    $product = $entityManager->find(Products::class, $data['product_id']);
-                    if ($product) {
-                        $stock->setProduct($product);
-                    } else {
-                        throw new Exception('Product not found.');
+                    
+                    // Récupérer le magasin
+                    $store = $entityManager->find(Stores::class, $data['store_id']);
+                    if (!$store) {
+                        throw new Exception("Store with ID " . $data['store_id'] . " not found");
                     }
+                    
+                    // Récupérer le produit
+                    $product = $entityManager->find(Products::class, $data['product_id']);
+                    if (!$product) {
+                        throw new Exception("Product with ID " . $data['product_id'] . " not found");
+                    }
+                    
+                    // Définir les propriétés du stock
+                    $stock->setStore($store);
+                    $stock->setProduct($product);
                     $stock->setQuantity($data['quantity']);
+                    
+                    // Vérifier si l'objet est correctement créé
+                    error_log("Stock avant persistance: Store=" . $stock->getStore()->getStoreName() . 
+                             ", Product=" . $stock->getProduct()->getProductName() . 
+                             ", Quantity=" . $stock->getQuantity());
+                    
+                    // Persister l'objet
                     $entityManager->persist($stock);
                     $entityManager->flush();
-                    echo json_encode(['message' => 'Stock created']);
+                    
+                    echo json_encode(['message' => 'Stock created successfully']);
                 } else {
-                    throw new Exception('Invalid input');
+                    throw new Exception('Missing required fields: store_id, product_id, or quantity');
                 }
             } else {
                 throw new Exception('Invalid action.');

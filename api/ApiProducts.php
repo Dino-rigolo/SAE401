@@ -140,14 +140,17 @@ error_log("Paramètres: " . json_encode($params->map(function($p) { return $p->g
                 $product = $entityManager->find(Products::class, $_REQUEST["id"]);
                 if ($product) {
                     echo json_encode([
+                        'product_id' => $product->getProductId(),
                         'product_name' => $product->getProductName(),
-                        'brand_id' => $product->getBrand()->getBrandId(),
-                        'category_id' => $product->getCategory()->getCategoryId(),
+                        'brand_id' => $product->getBrand() ? $product->getBrand()->getBrandId() : null,
+                        'brand_name' => $product->getBrand() ? $product->getBrand()->getBrandName() : 'N/A', // Ajouté 
+                        'category_id' => $product->getCategory() ? $product->getCategory()->getCategoryId() : null,
+                        'category_name' => $product->getCategory() ? $product->getCategory()->getCategoryName() : 'N/A', // Ajouté
                         'model_year' => $product->getModelYear(),
                         'list_price' => $product->getListPrice()
                     ]);
                 } else {
-                    throw new Exception('Product not found.');
+                    throw new Exception('Product not found');
                 }
             } else {
                 throw new Exception('Invalid action.');
@@ -243,6 +246,41 @@ error_log("Paramètres: " . json_encode($params->map(function($p) { return $p->g
             }
         } catch (Exception $e) {
             echo json_encode(['error' => $e->getMessage()]);
+        }
+        break;
+    case 'getbyid':
+        if (!empty($_REQUEST["id"])) {
+            $product = $entityManager->find(Products::class, $_REQUEST["id"]);
+            if ($product) {
+                echo json_encode([
+                    'product_id' => $product->getProductId(),
+                    'product_name' => $product->getProductName(),
+                    'brand_id' => $product->getBrand() ? $product->getBrand()->getBrandId() : null,
+                    'brand_name' => $product->getBrand() ? $product->getBrand()->getBrandName() : 'N/A', // Ajouté 
+                    'category_id' => $product->getCategory() ? $product->getCategory()->getCategoryId() : null,
+                    'category_name' => $product->getCategory() ? $product->getCategory()->getCategoryName() : 'N/A', // Ajouté
+                    'model_year' => $product->getModelYear(),
+                    'list_price' => $product->getListPrice()
+                ]);
+            } else {
+                throw new Exception('Product not found');
+            }
+        } else {
+            throw new Exception('ID is required');
+        }
+        break;
+    case 'delete':
+        if (!empty($_REQUEST["id"])) {
+            $product = $entityManager->find(Products::class, $_REQUEST["id"]);
+            if ($product) {
+                $entityManager->remove($product);
+                $entityManager->flush();
+                echo json_encode(['message' => 'Product deleted successfully']);
+            } else {
+                throw new Exception('Product not found');
+            }
+        } else {
+            throw new Exception('ID is required');
         }
         break;
     default:

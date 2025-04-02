@@ -469,3 +469,20 @@ footer a.active::after {
     filter: drop-shadow(0 0 2px rgba(0, 123, 255, 0.5));
 }
 
+.collapse-header {
+    transition: background-color 0.3s;
+    user-select: none;
+}
+
+.collapse-header:hover {
+    background-color: #f0f0f0;
+}
+
+.collapse-icon {
+    transition: transform 0.3s;
+}
+
+.card-header[aria-expanded="false"] .collapse-icon {
+    transform: rotate(180deg);
+}
+

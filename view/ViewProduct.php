@@ -22,12 +22,24 @@ $form_fields = $current_structure['form_fields'];
 ?>
 
 <div class="container my-5">
-<?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?php echo ucfirst($page_type); ?> ajouté avec succès !
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<?php endif; ?>
+    <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?php echo ucfirst($page_type); ?> ajouté avec succès !
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['update']) && $_GET['update'] == 1): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?php echo ucfirst($page_type); ?> modifié avec succès !
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['delete']) && $_GET['delete'] == 1): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?php echo ucfirst($page_type); ?> supprimé avec succès !
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
     <div class="row mb-4">
         <div class="col text-center">
             <h1 class="fw-bold"><?php echo $title; ?></h1>
@@ -94,61 +106,75 @@ $form_fields = $current_structure['form_fields'];
 
     <div class="row mt-5">
         <div class="col-md-6 offset-md-3">
-            <h5 class="text-center mb-3">Add a <?php echo rtrim($title, 's'); ?></h5>
             <div class="card shadow-sm">
-                <div class="card-body">
-                    <form action="<?php echo htmlspecialchars($_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . '/SAE401/add' . $page_type); ?>" method="POST">
-                        <?php foreach ($form_fields as $field): ?>
-                            <div class="mb-3">
-                                <label for="<?php echo $field['name']; ?>" class="form-label"><?php echo $field['label']; ?></label>
-                                
-                                <?php if ($field['type'] === 'select'): ?>
-                                    <select id="<?php echo $field['name']; ?>" name="<?php echo $field['name']; ?>" class="form-select" required>
-                                        <option value="">Select <?php echo $field['label']; ?></option>
-                                        <?php if (isset($select_options[$field['name']])): ?>
-                                            <?php foreach ($select_options[$field['name']] as $option): ?>
-                                                <?php 
-                                                $option_value = $option[$field['name']];
-                                                $option_label = '';
-                                                
-                                                // Déterminer le label à afficher selon le type de select
-                                                if ($field['source'] === 'brands') {
-                                                    $option_label = $option['brand_name'];
-                                                } elseif ($field['source'] === 'categories') {
-                                                    $option_label = $option['category_name'];
-                                                } elseif ($field['source'] === 'shops') {
-                                                    $option_label = $option['store_name'];
-                                                } elseif ($field['source'] === 'products') {
-                                                    $option_label = $option['product_name'];
-                                                }
-                                                ?>
-                                                <option value="<?php echo $option_value; ?>"><?php echo $option_label; ?></option>
+                <div class="card-header bg-light collapse-header" data-bs-toggle="collapse" data-bs-target="#addFormCollapse" aria-expanded="true" aria-controls="addFormCollapse" style="cursor: pointer;">
+                    <h5 class="text-center mb-0">
+                        <span>Add a <?php echo rtrim($title, 's'); ?></span>
+                        <i class="fas fa-chevron-down ms-2 collapse-icon"></i>
+                    </h5>
+                </div>
+                <div class="collapse" id="addFormCollapse">
+                    <div class="card-body">
+                        <form action="<?php echo htmlspecialchars($_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . '/SAE401/add' . $page_type); ?>" method="POST">
+                            <?php foreach ($form_fields as $field): ?>
+                                <div class="mb-3">
+                                    <label for="<?php echo $field['name']; ?>" class="form-label"><?php echo $field['label']; ?></label>
+                                    
+                                    <?php if ($field['type'] === 'select'): ?>
+                                        <select id="<?php echo $field['name']; ?>" name="<?php echo $field['name']; ?>" class="form-select" required>
+                                            <option value="">Select <?php echo $field['label']; ?></option>
+                                            <?php if (isset($select_options[$field['name']])): ?>
+                                                <?php foreach ($select_options[$field['name']] as $option): ?>
+                                                    <?php 
+                                                    $option_value = $option[$field['name']];
+                                                    $option_label = '';
+                                                    
+                                                    // Déterminer le label à afficher selon le type de select
+                                                    if ($field['source'] === 'brands') {
+                                                        $option_label = $option['brand_name'];
+                                                    } elseif ($field['source'] === 'categories') {
+                                                        $option_label = $option['category_name'];
+                                                    } elseif ($field['source'] === 'shops') {
+                                                        $option_label = $option['store_name'];
+                                                    } elseif ($field['source'] === 'products') {
+                                                        $option_label = $option['product_name'];
+                                                    }
+                                                    ?>
+                                                    <option value="<?php echo $option_value; ?>"><?php echo $option_label; ?></option>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
+                                        </select>
+                                    <?php elseif ($field['name'] === 'store_id'): ?>
+                                        <select id="store_id" name="store_id" class="form-select" required>
+                                            <option value="">Select Store</option>
+                                            <?php foreach ($select_options['store_id'] as $store): ?>
+                                                <option value="<?php echo $store['store_id']; ?>"><?php echo $store['store_name']; ?></option>
                                             <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </select>
-                                <?php elseif ($field['type'] === 'textarea'): ?>
-                                    <textarea id="<?php echo $field['name']; ?>" name="<?php echo $field['name']; ?>" class="form-control" 
-                                        placeholder="Enter <?php echo strtolower($field['label']); ?>" required></textarea>
-                                <?php else: ?>
-                                    <input type="<?php echo $field['type']; ?>" 
-                                        id="<?php echo $field['name']; ?>" 
-                                        name="<?php echo $field['name']; ?>" 
-                                        class="form-control" 
-                                        placeholder="Enter <?php echo strtolower($field['label']); ?>" 
-                                        <?php echo isset($field['step']) ? 'step="' . $field['step'] . '"' : ''; ?>
-                                        <?php if ($field['name'] === 'model_year'): ?>
-                                            min="1950" 
-                                            max="<?php echo date('Y') + 10; ?>"
-                                        <?php endif; ?>
-                                        required>
-                                <?php endif; ?>
+                                        </select>
+                                    <?php elseif ($field['type'] === 'textarea'): ?>
+                                        <textarea id="<?php echo $field['name']; ?>" name="<?php echo $field['name']; ?>" class="form-control" 
+                                            placeholder="Enter <?php echo strtolower($field['label']); ?>" required></textarea>
+                                    <?php else: ?>
+                                        <input type="<?php echo $field['type']; ?>" 
+                                            id="<?php echo $field['name']; ?>" 
+                                            name="<?php echo $field['name']; ?>" 
+                                            class="form-control" 
+                                            placeholder="Enter <?php echo strtolower($field['label']); ?>" 
+                                            <?php echo isset($field['step']) ? 'step="' . $field['step'] . '"' : ''; ?>
+                                            <?php if ($field['name'] === 'model_year'): ?>
+                                                min="1950" 
+                                                max="<?php echo date('Y') + 10; ?>"
+                                            <?php endif; ?>
+                                            required>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-success">Add</button>
                             </div>
-                        <?php endforeach; ?>
-                        
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-success">Add</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -306,6 +332,30 @@ $form_fields = $current_structure['form_fields'];
                 const type = this.getAttribute('data-type');
                 confirmDeleteBtn.href = `/SAE401/delete${type}/${id}`;
             });
+        });
+    });
+
+    // Gestion de l'icône dans les en-têtes repliables
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sélectionner tous les en-têtes repliables
+        const collapseHeaders = document.querySelectorAll('.collapse-header');
+        
+        // Pour chaque en-tête, ajouter un gestionnaire d'événement
+        collapseHeaders.forEach(header => {
+            const targetId = header.getAttribute('data-bs-target');
+            const collapseElement = document.querySelector(targetId);
+            const icon = header.querySelector('.collapse-icon');
+            
+            // Écouter l'événement show.bs.collapse et hide.bs.collapse sur l'élément repliable
+            if (collapseElement) {
+                collapseElement.addEventListener('show.bs.collapse', function() {
+                    if (icon) icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                });
+                
+                collapseElement.addEventListener('hide.bs.collapse', function() {
+                    if (icon) icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                });
+            }
         });
     });
 </script>

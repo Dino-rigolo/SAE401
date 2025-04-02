@@ -45,7 +45,10 @@ switch ($request_method) {
             } elseif (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "getbyid" && !empty($_REQUEST["id"])) {
                 $brand = $entityManager->find(Brands::class, $_REQUEST["id"]);
                 if ($brand) {
-                    echo json_encode(['brand_name' => $brand->getBrandName()]);
+                    echo json_encode([
+                        'brand_id' => $brand->getBrandId(), // Ajout de l'ID
+                        'brand_name' => $brand->getBrandName()
+                    ]);
                 } else {
                     throw new Exception('Brand not found.');
                 }
@@ -92,12 +95,12 @@ switch ($request_method) {
                     if ($brand) {
                         $brand->setBrandName($data['brand_name']);
                         $entityManager->flush();
-                        echo json_encode(['message' => 'Brand updated']);
+                        echo json_encode(['message' => 'Brand updated successfully']);
                     } else {
-                        throw new Exception('Brand not found.');
+                        throw new Exception('Brand not found');
                     }
                 } else {
-                    throw new Exception('Invalid input');
+                    throw new Exception('Brand name is required');
                 }
             } else {
                 throw new Exception('Invalid action.');

@@ -180,6 +180,24 @@ class Controller {
                 return;
             }
             
+            // Traiter les actions modif{type}
+            if (preg_match('/^modif(brands|categories|shops|products|stocks|employees)$/', $this->action)) {
+                $this->handleModif();
+                return;
+            }
+            
+            // Traiter les actions update{type}
+            if (preg_match('/^update(brands|categories|shops|products|stocks|employees)$/', $this->action)) {
+                $this->handleUpdate();
+                return;
+            }
+            
+            // Traiter les actions delete{type}
+            if (preg_match('/^delete(brands|categories|shops|products|stocks|employees)$/', $this->action)) {
+                $this->handleDelete();
+                return;
+            }
+            
             // Vérifier si l'utilisateur est connecté
             $isConnected = isset($_SESSION['employee']);
             $isEmployee = $isConnected && isset($_SESSION['employee']);
@@ -677,7 +695,7 @@ class Controller {
             ],
             'products' => [
                 'columns' => ['ID', 'Product Name', 'Brand', 'Category', 'Model Year', 'Price'],
-                'fields' => ['product_id', 'product_name', 'brand_name', 'category_name', 'model_year', 'list_price'],
+                'fields' => ['product_id', 'product_name', 'brand_id', 'category_id', 'model_year', 'list_price'],
                 'id_field' => 'product_id',
                 'form_fields' => [
                     ['name' => 'product_name', 'label' => 'Product Name', 'type' => 'text'],
@@ -708,6 +726,11 @@ class Controller {
             'stocks' => 'https://clafoutis.alwaysdata.net/SAE401/api/stocks'
         ];
         
+        // Juste avant d'initialiser le cURL pour les stocks
+        if ($type === 'stocks') {
+            error_log("Attempting to fetch stocks from: " . $api_endpoints[$type]);
+        }
+
         // Récupérer les données via l'API
         $data = [];
         if (isset($api_endpoints[$type])) {
@@ -723,6 +746,13 @@ class Controller {
                 }
             }
             curl_close($ch);
+        }
+
+        // Juste après avoir reçu la réponse pour les stocks
+        if ($type === 'stocks') {
+            error_log("Stocks API response: " . substr($response, 0, 200) . "...");  // Afficher les 200 premiers caractères
+            error_log("HTTP code: " . curl_getinfo($ch, CURLINFO_HTTP_CODE));
+            error_log("JSON error: " . json_last_error_msg());
         }
         
         // Pour les champs de type select, récupérer les données source
@@ -751,6 +781,27 @@ class Controller {
         $GLOBALS['product_select_options'] = $select_options;
         $GLOBALS['product_title'] = isset($titles[$type]) ? $titles[$type] : 'Brands';
         
+        // Dans Controller.class.php, dans la méthode showProductsPage, ajoutez ceci pour les stocks :
+        if ($type === 'stocks') {
+            // Vérifier et préparer les données des stocks
+            foreach ($data as $key => $stock) {
+                // Vérifier que toutes les clés nécessaires existent
+                if (!isset($stock['store_name'])) {
+                    $data[$key]['store_name'] = 'N/A';
+                }
+                if (!isset($stock['product_name'])) {
+                    $data[$key]['product_name'] = 'N/A';
+                }
+                if (!isset($stock['quantity'])) {
+                    $data[$key]['quantity'] = 0;
+                }
+            }
+        } elseif ($type === 'stocks') {
+            // Si $data n'est pas un tableau, initialiser à un tableau vide
+            $data = [];
+            error_log("API Stocks a retourné des données non valides");
+        }
+
         require_once __DIR__ . '/../view/ViewProduct.php';
     }
 
@@ -820,14 +871,53 @@ class Controller {
             'categories' => 'https://clafoutis.alwaysdata.net/SAE401/api/categories',
             'shops' => 'https://clafoutis.alwaysdata.net/SAE401/api/stores',
             'products' => 'https://clafoutis.alwaysdata.net/SAE401/api/products',
-            'stocks' => 'https://clafoutis.alwaysdata.net/SAE401/api/stocks'
+            'stocks' => 'https://clafoutis.alwaysdata.net/SAE401/api/stocks' // Changez cette URL
         ];
         
         // Préparer les données pour l'API
         $data = $_POST;
-        
-        // Ajouter le paramètre action=create pour l'API
-        $apiUrl = $apiUrls[$type] . '?action=create';
+
+// S'assurer que les IDs sont au format numérique pour les stocks
+if ($type === 'stocks') {
+    if (isset($data['store_id'])) {
+        $data['store_id'] = (int)$data['store_id'];
+    }
+    if (isset($data['product_id'])) {
+        $data['product_id'] = (int)$data['product_id'];
+    }
+    if (isset($data['quantity'])) {
+        $data['quantity'] = (int)$data['quantity'];
+    }
+    
+    // Vérifier que les données nécessaires sont présentes
+    if (!isset($data['store_id']) || !isset($data['product_id']) || !isset($data['quantity'])) {
+        throw new ControllerException("Données incomplètes pour l'ajout de stock", 400);
+    }
+    
+    // Ajouter des logs supplémentaires pour le débogage
+    error_log("Envoi de données de stock: store_id=" . $data['store_id'] . ", product_id=" . $data['product_id'] . ", quantity=" . $data['quantity']);
+}
+
+// Log pour le débogage
+error_log("Données envoyées à l'API: " . json_encode($data));
+
+// Ajouter le paramètre action=create pour l'API
+$apiUrl = $apiUrls[$type];
+if ($type === 'stocks') {
+    $apiUrl .= '?action=create';
+    
+    // Ajouter ces logs spécifiques pour les stocks
+    error_log("Données de stock envoyées: " . json_encode([
+        'store_id' => $data['store_id'],
+        'product_id' => $data['product_id'],
+        'quantity' => $data['quantity']
+    ]));
+} else {
+    $apiUrl .= '?action=create';
+}
+
+// Enregistrer l'URL complète dans les logs
+error_log("URL API complète: " . $apiUrl);
         
         // Envoyer à l'API
         $ch = curl_init($apiUrl);
@@ -932,6 +1022,337 @@ class Controller {
         
         // Redirection vers la liste des magasins
         header("Location: /SAE401/products?type=shops&success=1");
+        exit;
+    }
+
+    /**
+     * Gère la modification d'un élément
+     */
+    private function handleUpdate() {
+        // Vérifier si l'utilisateur est connecté
+        if (!isset($_SESSION['employee'])) {
+            throw new ControllerException("Vous devez être connecté pour effectuer cette action", 401);
+        }
+        
+        // Récupérer le type d'élément à modifier depuis l'URL
+        $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
+        $action = $urlParts[1] ?? ''; // update{type}
+        $type = str_replace('update', '', $action); // Extrait 'brands' de 'updatebrands'
+        
+        // Valider le type
+        $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks', 'employees'];
+        if (!in_array($type, $validTypes)) {
+            throw new ControllerException("Type d'élément invalide", 400);
+        }
+        
+        // Vérifier que les données POST sont présentes
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            throw new ControllerException("Méthode non autorisée", 405);
+        }
+        
+        // Préparation des données pour l'API
+        $data = $_POST;
+        
+        // Déterminer l'ID de l'élément à mettre à jour
+        $id_fields = [
+            'brands' => 'brand_id',
+            'categories' => 'category_id',
+            'shops' => 'store_id',
+            'products' => 'product_id',
+            'stocks' => 'stock_id',
+            'employees' => 'employee_id'
+        ];
+        
+        $id_field = $id_fields[$type] ?? '';
+        $id = isset($data[$id_field]) ? $data[$id_field] : null;
+        
+        if (empty($id)) {
+            throw new ControllerException("ID manquant pour la mise à jour", 400);
+        }
+        
+        // Préparation de l'URL API
+        $apiUrls = [
+            'brands' => "https://clafoutis.alwaysdata.net/SAE401/api/brands/{$id}?action=update",
+            'categories' => "https://clafoutis.alwaysdata.net/SAE401/api/categories/{$id}?action=update",
+            'shops' => "https://clafoutis.alwaysdata.net/SAE401/api/stores/{$id}?action=update",
+            'products' => "https://clafoutis.alwaysdata.net/SAE401/api/products/{$id}?action=update",
+            'stocks' => "https://clafoutis.alwaysdata.net/SAE401/api/stocks/{$id}?action=update",
+            'employees' => "https://clafoutis.alwaysdata.net/SAE401/api/employees/{$id}?action=update"
+        ];
+        
+        // Log pour le débogage
+        error_log("Données envoyées à l'API pour mise à jour: " . json_encode($data));
+        
+        // Envoyer à l'API
+        $ch = curl_init($apiUrls[$type]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Api: e8f1997c763' // Clé API
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
+        // Log pour le débogage
+        error_log("API Response ($type): " . $response);
+        error_log("HTTP Code: " . $httpCode);
+        
+        curl_close($ch);
+        
+        // Vérifier la réponse
+        if ($httpCode >= 400) {
+            $error = json_decode($response, true);
+            throw new ControllerException("Erreur lors de la mise à jour: " . ($error['error'] ?? "Erreur inconnue"), 400);
+        }
+        
+        // Redirection vers la liste avec message de succès
+        header("Location: /SAE401/products?type=$type&update=1");
+        exit;
+    }
+
+    /**
+     * Méthode pour afficher le formulaire de modification
+     */
+    private function handleModif() {
+        // Récupérer le type et l'ID dans l'URL
+        $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
+        
+        if (count($urlParts) < 3) {
+            throw new ControllerException("URL invalide", 400);
+        }
+        
+        $action = $urlParts[1]; // modif{type}
+        $type = str_replace('modif', '', $action); // Extraire 'brands' de 'modifbrands'
+        
+        $id = isset($this->id) ? $this->id : (isset($urlParts[2]) ? $urlParts[2] : null);
+
+        if (empty($id)) {
+            throw new ControllerException("ID manquant", 400);
+        }
+        
+        // Valider le type
+        $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks', 'employees'];
+        if (!in_array($type, $validTypes)) {
+            throw new ControllerException("Type d'élément invalide", 400);
+        }
+        
+        // Préparation de l'URL API
+        $apiEndpoints = [
+            'brands' => "https://clafoutis.alwaysdata.net/SAE401/api/brands/{$id}",
+            'categories' => "https://clafoutis.alwaysdata.net/SAE401/api/categories/{$id}",
+            'shops' => "https://clafoutis.alwaysdata.net/SAE401/api/stores/{$id}",
+            'products' => "https://clafoutis.alwaysdata.net/SAE401/api/products/{$id}",
+            'stocks' => "https://clafoutis.alwaysdata.net/SAE401/api/stocks/{$id}",
+            'employees' => "https://clafoutis.alwaysdata.net/SAE401/api/employees/{$id}"
+        ];
+        
+        // Récupérer les données de l'élément
+        $ch = curl_init($apiEndpoints[$type]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $item = json_decode($response, true);
+
+// Ajoutez ce log pour déboguer
+error_log("Données récupérées pour $type : " . json_encode($item));
+
+if (empty($item) || isset($item['error'])) {
+    throw new ControllerException("Élément non trouvé ou erreur API", 404);
+}
+
+error_log("API Response for $type/$id: " . $response);
+error_log("Data decoded: " . json_encode($item));
+
+// Vérifier les données spécifiques pour chaque type
+if ($type === 'products' && (!isset($item['brand_id']) || !isset($item['category_id']))) {
+    error_log("WARNING: Product is missing brand_id or category_id");
+    // Récupérer les données manquantes si possible
+}
+else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['product_id']))) {
+    error_log("WARNING: Stock is missing store_id or product_id");
+    // Récupérer les données manquantes si possible
+}
+        
+        // Structure pour les types d'éléments
+        $structure = $this->getStructure();
+        
+        // Récupérer les options de sélection si nécessaire (pour les listes déroulantes)
+        $select_options = [];
+        
+        // API endpoints pour les options de sélection
+        $api_endpoints = [
+            'brands' => 'https://clafoutis.alwaysdata.net/SAE401/api/brands',
+            'categories' => 'https://clafoutis.alwaysdata.net/SAE401/api/categories',
+            'shops' => 'https://clafoutis.alwaysdata.net/SAE401/api/stores',
+            'products' => 'https://clafoutis.alwaysdata.net/SAE401/api/products',
+            'employees' => 'https://clafoutis.alwaysdata.net/SAE401/api/employees'
+        ];
+        
+        // Pour chaque champ de type "select", récupérer les options
+        $form_fields = $structure[$type]['form_fields'];
+        foreach ($form_fields as $field) {
+            if (isset($field['type']) && $field['type'] === 'select' && isset($field['source'])) {
+                $source_type = $field['source'];
+                if (isset($api_endpoints[$source_type])) {
+                    $ch = curl_init($api_endpoints[$source_type]);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    $response = curl_exec($ch);
+                    if ($response !== false) {
+                        $select_options[$field['name']] = json_decode($response, true);
+                    }
+                    curl_close($ch);
+                }
+            }
+        }
+        
+        // Passer les données à la vue
+        $GLOBALS['page_type'] = $type;
+        $GLOBALS['item_data'] = $item;
+        $GLOBALS['product_structure'] = $structure;
+        $GLOBALS['product_select_options'] = $select_options;
+        $GLOBALS['product_title'] = isset($this->getTitles()[$type]) ? $this->getTitles()[$type] : 'Element';
+        
+        require_once __DIR__ . '/../view/ViewModifProduct.php';
+    }
+
+    /**
+     * Retourne la structure des données pour chaque type
+     */
+    private function getStructure() {
+        return [
+            'brands' => [
+                'columns' => ['ID', 'Brand Name'],
+                'fields' => ['brand_id', 'brand_name'],
+                'id_field' => 'brand_id',
+                'form_fields' => [
+                    ['name' => 'brand_name', 'label' => 'Brand Name', 'type' => 'text']
+                ]
+            ],
+            'categories' => [
+                'columns' => ['ID', 'Category Name'],
+                'fields' => ['category_id', 'category_name'],
+                'id_field' => 'category_id',
+                'form_fields' => [
+                    ['name' => 'category_name', 'label' => 'Category Name', 'type' => 'text']
+                ]
+            ],
+            'shops' => [
+                'columns' => ['ID', 'Store Name', 'Phone', 'Email', 'Address'],
+                'fields' => ['store_id', 'store_name', 'phone', 'email', 'street'],
+                'id_field' => 'store_id',
+                'form_fields' => [
+                    ['name' => 'store_name', 'label' => 'Store Name', 'type' => 'text'],
+                    ['name' => 'phone', 'label' => 'Phone', 'type' => 'tel'],
+                    ['name' => 'email', 'label' => 'Email', 'type' => 'email'],
+                    ['name' => 'street', 'label' => 'Street Address', 'type' => 'text']
+                ]
+            ],
+            'products' => [
+                'columns' => ['ID', 'Product Name', 'Brand', 'Category', 'Model Year', 'Price'],
+                'fields' => ['product_id', 'product_name', 'brand_id', 'category_id', 'model_year', 'list_price'],
+                'id_field' => 'product_id',
+                'form_fields' => [
+                    ['name' => 'product_name', 'label' => 'Product Name', 'type' => 'text'],
+                    ['name' => 'brand_id', 'label' => 'Brand', 'type' => 'select', 'source' => 'brands'],
+                    ['name' => 'category_id', 'label' => 'Category', 'type' => 'select', 'source' => 'categories'],
+                    ['name' => 'model_year', 'label' => 'Model Year', 'type' => 'number'],
+                    ['name' => 'list_price', 'label' => 'Price', 'type' => 'number', 'step' => '0.01']
+                ]
+            ],
+            'stocks' => [
+                'columns' => ['ID', 'Store', 'Product', 'Quantity'],
+                'fields' => ['stock_id', 'store_id', 'product_id', 'quantity'],
+                'id_field' => 'stock_id',
+                'form_fields' => [
+                    ['name' => 'store_id', 'label' => 'Store', 'type' => 'select', 'source' => 'shops'],
+                    ['name' => 'product_id', 'label' => 'Product', 'type' => 'select', 'source' => 'products'],
+                    ['name' => 'quantity', 'label' => 'Quantity', 'type' => 'number']
+                ]
+            ],
+            'employees' => [
+                'columns' => ['ID', 'Name', 'Email', 'Role', 'Store'],
+                'fields' => ['employee_id', 'employee_name', 'employee_email', 'employee_role', 'store_id'],
+                'id_field' => 'employee_id',
+                'form_fields' => [
+                    ['name' => 'employee_name', 'label' => 'Name', 'type' => 'text'],
+                    ['name' => 'employee_email', 'label' => 'Email', 'type' => 'email'],
+                    ['name' => 'employee_password', 'label' => 'Password', 'type' => 'password'],
+                    ['name' => 'employee_role', 'label' => 'Role', 'type' => 'select', 'options' => [
+                        ['value' => 'employee', 'label' => 'Employee'],
+                        ['value' => 'chief', 'label' => 'Chief'],
+                        ['value' => 'it', 'label' => 'IT']
+                    ]],
+                    ['name' => 'store_id', 'label' => 'Store', 'type' => 'select', 'source' => 'shops']
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * Retourne les titres pour chaque type
+     */
+    private function getTitles() {
+        return [
+            'brands' => 'Brands',
+            'categories' => 'Categories',
+            'shops' => 'Shops',
+            'products' => 'Products',
+            'stocks' => 'Stocks',
+            'employees' => 'Employees'
+        ];
+    }
+
+    private function handleDelete() {
+        // Vérifier si l'utilisateur est connecté
+        if (!isset($_SESSION['employee'])) {
+            throw new ControllerException("Vous devez être connecté pour effectuer cette action", 401);
+        }
+
+        // Récupérer le type et l'ID depuis l'URL
+        $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
+        $action = $urlParts[1]; // delete{type}
+        $id = $urlParts[2] ?? null;
+
+        $type = str_replace('delete', '', $action); // Extrait 'brands' de 'deletebrands'
+
+        // Valider le type
+        $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks', 'employees'];
+        if (!in_array($type, $validTypes)) {
+            throw new ControllerException("Type d'élément invalide", 400);
+        }
+
+        if (empty($id)) {
+            throw new ControllerException("ID manquant pour la suppression", 400);
+        }
+
+        // Préparer l'URL de l'API
+        $apiUrls = [
+            'brands' => "https://clafoutis.alwaysdata.net/SAE401/api/brands/{$id}?action=delete",
+            'categories' => "https://clafoutis.alwaysdata.net/SAE401/api/categories/{$id}?action=delete",
+            'shops' => "https://clafoutis.alwaysdata.net/SAE401/api/stores/{$id}?action=delete",
+            'products' => "https://clafoutis.alwaysdata.net/SAE401/api/products/{$id}?action=delete",
+            'stocks' => "https://clafoutis.alwaysdata.net/SAE401/api/stocks/{$id}?action=delete",
+            'employees' => "https://clafoutis.alwaysdata.net/SAE401/api/employees/{$id}?action=delete"
+        ];
+
+        // Envoyer la requête à l'API
+        $ch = curl_init($apiUrls[$type]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        // Vérifier la réponse
+        if ($httpCode >= 400) {
+            $error = json_decode($response, true);
+            throw new ControllerException("Erreur lors de la suppression : " . ($error['error'] ?? "Erreur inconnue"), 400);
+        }
+
+        // Rediriger vers la liste avec un message de succès
+        header("Location: /SAE401/products?type={$type}&delete=1");
         exit;
     }
 }
