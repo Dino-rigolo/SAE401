@@ -86,8 +86,9 @@ class Controller {
                 
                 $employee = json_decode($response, true);
                 
-                // Vérifier que l'employé existe et que le hash correspond
-                if (!$employee || isset($employee['error'])) {
+                // Vérifier que l'employé existe et qu'il contient les données nécessaires
+                if (!$employee || isset($employee['error']) || 
+                    !isset($employee['employee_id']) || !isset($employee['employee_password'])) {
                     setcookie('sae401_auth', '', time() - 3600, '/');
                     return;
                 }
@@ -109,17 +110,12 @@ class Controller {
                     $cookieData['expires'] = time() + (30 * 24 * 60 * 60);
                     $cookieValue = base64_encode(json_encode($cookieData));
                     
+                    // Utiliser une version simplifiée pour le développement
                     setcookie(
                         'sae401_auth', 
-                        $cookieValue, 
-                        [
-                            'expires' => time() + (30 * 24 * 60 * 60),
-                            'path' => '/',
-                            'domain' => '',
-                            'secure' => true,
-                            'httponly' => true,
-                            'samesite' => 'Lax'
-                        ]
+                        $cookieValue,
+                        time() + (30 * 24 * 60 * 60), // 30 jours
+                        '/' 
                     );
                 } else {
                     // Hash invalide, supprimer le cookie
@@ -402,22 +398,19 @@ class Controller {
                             'hash' => hash('sha256', $employee['employee_id'] . $employee['employee_password'] . 'SAE401_SALT')
                         ];
                         
-                        // Encoder et chiffrer les données
+                        // Encoder les données
                         $cookieValue = base64_encode(json_encode($cookieData));
                         
-                        // Créer le cookie qui expire dans 30 jours
+                        // Créer le cookie avec des paramètres simplifiés pour un environnement de développement
                         setcookie(
                             'sae401_auth', 
-                            $cookieValue, 
-                            [
-                                'expires' => time() + (30 * 24 * 60 * 60), // 30 jours
-                                'path' => '/',
-                                'domain' => '',
-                                'secure' => true,    // Cookie uniquement via HTTPS
-                                'httponly' => true,  // Non accessible via JavaScript
-                                'samesite' => 'Lax' // Protection CSRF (Lax pour permettre les liens entrants)
-                            ]
+                            $cookieValue,
+                            time() + (30 * 24 * 60 * 60), // 30 jours
+                            '/'
                         );
+                        
+                        // Log pour débogage
+                        error_log("Cookie créé pour l'utilisateur: " . $employee['employee_email']);
                     }
                     
                     $_SESSION['success'] = "Connexion réussie";
@@ -615,7 +608,16 @@ class Controller {
         $employees = json_decode($response, true);
         curl_close($ch);
         
-        $isIT = isset($_SESSION['employee']) && $_SESSION['employee']['employee_role'] === 'it';
+        // Récupérer les magasins via l'API
+        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/stores");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $stores = json_decode($response, true);
+        curl_close($ch);
+        
+        // Passer les données à la vue
+        $GLOBALS['employees_data'] = $employees;
+        $GLOBALS['stores_data'] = $stores;
         
         require_once __DIR__ . '/../view/ViewEmployees.php';
     }
@@ -1020,8 +1022,8 @@ error_log("URL API complète: " . $apiUrl);
             throw new ControllerException("Erreur lors de l'ajout: " . ($error['error'] ?? "Erreur inconnue"), 400);
         }
         
-        // Redirection vers la liste des magasins
-        header("Location: /SAE401/products?type=shops&success=1");
+        // Redirection vers la liste des employés
+        header("Location: /SAE401/employees?success=1");
         exit;
     }
 
@@ -1315,7 +1317,10 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
         $action = $urlParts[1]; // delete{type}
         $id = $urlParts[2] ?? null;
 
-        $type = str_replace('delete', '', $action); // Extrait 'brands' de 'deletebrands'
+        $type = str_replace('delete', '', $action); // Extrait 'stocks' de 'deletestocks'
+
+        // Log pour débogage
+        error_log("Type : $type, ID : $id");
 
         // Valider le type
         $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks', 'employees'];
@@ -1337,6 +1342,9 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
             'employees' => "https://clafoutis.alwaysdata.net/SAE401/api/employees/{$id}?action=delete"
         ];
 
+        // Log pour débogage
+        error_log("URL API : " . $apiUrls[$type]);
+
         // Envoyer la requête à l'API
         $ch = curl_init($apiUrls[$type]);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1344,6 +1352,10 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        // Log pour débogage
+        error_log("Réponse de l'API : " . $response);
+        error_log("Code HTTP : " . $httpCode);
 
         // Vérifier la réponse
         if ($httpCode >= 400) {

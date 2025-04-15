@@ -6,8 +6,10 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 require_once '../vendor/autoload.php'; 
 require_once '../src/Entity/Stocks.php';
 require_once '../src/Entity/Products.php';
+require_once '../src/Entity/Stores.php';
 require_once '../bootstrap.php';
 
+use Entity\Stores;
 use Entity\Stocks;
 use Entity\Products;
 
@@ -73,41 +75,40 @@ switch ($request_method) {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "create") {
                 $data = json_decode(file_get_contents('php://input'), true);
                 
-                // Journaliser les données reçues pour le débogage
+                // Log des données reçues
                 error_log("Données reçues pour la création de stock : " . json_encode($data));
                 
-                // Ajoutez ce log
-                error_log("ApiStocks - Données reçues pour création: " . json_encode($data));
-                
                 if (isset($data['store_id'], $data['product_id'], $data['quantity'])) {
-                    // Créer l'objet Stock
-                    $stock = new Stocks();
-                    
                     // Récupérer le magasin
                     $store = $entityManager->find(Stores::class, $data['store_id']);
                     if (!$store) {
                         throw new Exception("Store with ID " . $data['store_id'] . " not found");
                     }
-                    
+
                     // Récupérer le produit
                     $product = $entityManager->find(Products::class, $data['product_id']);
                     if (!$product) {
                         throw new Exception("Product with ID " . $data['product_id'] . " not found");
                     }
                     
-                    // Définir les propriétés du stock
+                    // Créer et persister le stock
+                    $stock = new Stocks();
                     $stock->setStore($store);
                     $stock->setProduct($product);
                     $stock->setQuantity($data['quantity']);
-                    
-                    // Vérifier si l'objet est correctement créé
-                    error_log("Stock avant persistance: Store=" . $stock->getStore()->getStoreName() . 
-                             ", Product=" . $stock->getProduct()->getProductName() . 
-                             ", Quantity=" . $stock->getQuantity());
-                    
-                    // Persister l'objet
+
+                    // Log avant persistance
+                    error_log("Stock avant persistance : " . json_encode([
+                        'store' => $stock->getStore()->getStoreName(),
+                        'product' => $stock->getProduct()->getProductName(),
+                        'quantity' => $stock->getQuantity()
+                    ]));
+
                     $entityManager->persist($stock);
                     $entityManager->flush();
+
+                    // Log après persistance
+                    error_log("Stock ajouté avec succès");
                     
                     echo json_encode(['message' => 'Stock created successfully']);
                 } else {
@@ -178,7 +179,7 @@ switch ($request_method) {
 
 //https://clafoutis.alwaysdata.net/SAE401/api/ApiStocks.php?action=getbyid&id=1"
 
-// "https://clafoutis.alwaysdata.net/SAE401/api/ApiStocks.php?action=create" -d '{"product_id": 1, "quantity": 100}' -H "Content-Type: application/json" -H "Authorization: Bearer e8f1997c763"
+// "https://clafoutis.alwaysdata.net/SAE401/api/ApiStocks.php?action=create" -d '{"store_id":1", product_id": 1, "quantity": 100}' -H "Content-Type: application/json" -H "Authorization: Bearer e8f1997c763"
 
 //"https://clafoutis.alwaysdata.net/SAE401/api/ApiStocks.php?action=update&id=1" -d '{"product_id": 1, "quantity": 150}' -H "Content-Type: application/json" -H "Authorization: Bearer e8f1997c763"
 
