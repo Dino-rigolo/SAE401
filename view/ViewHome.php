@@ -1,7 +1,7 @@
 <?php 
 include_once('www/header.inc.php');
 ?>
-<!-- Section principale -->
+
 <div class="intro text-center text-white" style="background-color: #333; padding: 50px 0;">
     <h2>Welcome to</h2>
     <h1>BikeStores</h1>
@@ -9,7 +9,6 @@ include_once('www/header.inc.php');
     <a href="/SAE401/catalogue" class="btn btn-success rounded-pill mt-3 px-4 py-2">Our bikes</a>
 </div>
 
-<!-- Section des magasins -->
 <h2 class="text-center my-4" style="color: #333;">The BikeStores shops</h2>
 <div class="container">
     <div class="card shadow mb-5" style="border: none;">
@@ -19,11 +18,11 @@ include_once('www/header.inc.php');
     </div>
 </div>
 
-<!-- Liste des magasins -->
+
 <h2 class="text-center my-4" style="color: #333;">List of shops</h2>
 <div class="container">
     <div class="row g-4" id="shop-container">
-        <!-- Les données des boutiques seront chargées ici par AJAX -->
+
         <div class="col-12 text-center">
             <div class="spinner-border text-success" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -39,9 +38,7 @@ include_once('www/header.inc.php');
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <script type="text/javascript">
-    var map; // Variable globale pour la carte
-    
-    // Attendre que tout soit complètement chargé
+    var map; 
     window.addEventListener('load', function() {
         if (typeof L === 'undefined') {
             console.error("Leaflet n'est pas chargé correctement");
@@ -50,15 +47,13 @@ include_once('www/header.inc.php');
         }
         
         console.log("Initialisation de la carte");
-        
-        // Initialiser la carte
+
         map = L.map('map', {
             center: [46.603354, 1.888334],
             zoom: 6,
             zoomControl: true
         });
         
-        // Ajouter les tuiles
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             subdomains: 'abcd',
@@ -67,29 +62,25 @@ include_once('www/header.inc.php');
         
         console.log("Carte initialisée");
         
-        // Forcer la mise à jour de la taille
         setTimeout(function() {
             map.invalidateSize(true);
             console.log("Carte redimensionnée");
         }, 500);
         
-        // Charger les boutiques
         loadShops();
         
-        // Géolocalisation
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 function(position) {
                     var lat = position.coords.latitude;
                     var lng = position.coords.longitude;
                     console.log("Position utilisateur:", lat, lng);
-                    
-                    // Définir une icône personnalisée pour l'utilisateur
+
                     var userIcon = L.icon({
                         iconUrl: '/SAE401/www/images/user-marker.png',
-                        iconSize: [32, 32], // Taille de l'icône
-                        iconAnchor: [16, 32], // Point de l'icône qui correspond à la position
-                        popupAnchor: [0, -32] // Point d'où le popup s'ouvre
+                        iconSize: [32, 32], 
+                        iconAnchor: [16, 32], 
+                        popupAnchor: [0, -32] 
                     });
 
                     var userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
@@ -104,7 +95,6 @@ include_once('www/header.inc.php');
         }
     });
     
-    // Fonction pour charger les boutiques depuis l'API
     function loadShops() {
         console.log("Chargement des boutiques");
         $.ajax({
@@ -113,17 +103,11 @@ include_once('www/header.inc.php');
             dataType: "json",
             success: function(data) {
                 console.log("Boutiques reçues:", data);
-                
-                // Vider le conteneur
                 $("#shop-container").empty();
-                
-                // Si aucune boutique n'est trouvée
                 if (!data || data.length === 0 || (data.error && data.error === 'No stores found')) {
                     $("#shop-container").html('<div class="col-12"><div class="alert alert-info text-center">Aucune boutique disponible</div></div>');
                     return;
                 }
-                
-                // Afficher chaque boutique dans la liste
                 $.each(data, function(index, store) {
                     var storeHtml = '<div class="col-lg-4 col-md-6 col-sm-12">' +
                         '<div class="card h-100 transition-card">' +
@@ -141,14 +125,9 @@ include_once('www/header.inc.php');
                         '</div>';
                     
                     $("#shop-container").append(storeHtml);
-                    
-                    // Ajouter un marqueur seulement si la carte est initialisée
                     if (map) {
-                        // Adresse pour la géolocalisation
                         var address = encodeURIComponent((store.street || '') + ', ' + (store.zip_code || '') + ' ' + (store.city || ''));
-                        console.log("Géocodage pour:", store.store_name, "Adresse:", address);
-                        
-                        // Utiliser Nominatim (OpenStreetMap) pour le géocodage
+                        console.log("Géocodage pour:", store.store_name, "Adresse:", address);                 
                         $.getJSON('https://nominatim.openstreetmap.org/search?format=json&q=' + address, function(results) {
                             if (results && results.length > 0) {
                                 console.log("Géocodage réussi pour:", store.store_name, results[0]);
@@ -157,7 +136,6 @@ include_once('www/header.inc.php');
                                 var lon = parseFloat(results[0].lon);
                                 
                                 if (!isNaN(lat) && !isNaN(lon)) {
-                                    // Définir une icône personnalisée pour les boutiques
                                     var storeIcon = L.icon({
                                         iconUrl: '/SAE401/www/images/store-marker.png',
                                         iconSize: [32, 32],

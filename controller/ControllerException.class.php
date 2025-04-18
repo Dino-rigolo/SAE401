@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Exception personnalisée pour le contrôleur
+ * Custom exception for the controller
  */
 class ControllerException extends Exception {
     /**
      * Constructeur
      * 
-     * @param string $message Le message d'erreur
-     * @param int $code Le code HTTP d'erreur
+     * @param string $message The error message
+     * @param int $code The HTTP error code
      */
     public function __construct($message, $code = 500) {
         parent::__construct($message, $code);

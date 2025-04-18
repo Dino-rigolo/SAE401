@@ -1,19 +1,16 @@
 <?php 
 include_once('www/header.inc.php');
 
-// Charger FontAwesome pour les icônes
 echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
 
-// Récupérer le type depuis $_GET (déjà défini par le contrôleur)
 $page_type = isset($_GET['type']) ? $_GET['type'] : 'brands';
 
-// Utiliser les données passées par le contrôleur
 $title = $GLOBALS['product_title'];
 $data = $GLOBALS['product_data'];
 $structure = $GLOBALS['product_structure'];
 $select_options = $GLOBALS['product_select_options'];
 
-// Récupérer la structure pour le type actuel
+
 $current_structure = isset($structure[$page_type]) ? $structure[$page_type] : $structure['brands'];
 $columns = $current_structure['columns'];
 $fields = $current_structure['fields'];
@@ -132,7 +129,6 @@ $form_fields = $current_structure['form_fields'];
                                                     $option_value = $option[$field['name']];
                                                     $option_label = '';
                                                     
-                                                    // Déterminer le label à afficher selon le type de select
                                                     if ($field['source'] === 'brands') {
                                                         $option_label = $option['brand_name'];
                                                     } elseif ($field['source'] === 'categories') {
@@ -184,7 +180,6 @@ $form_fields = $current_structure['form_fields'];
     </div>
 </div>
 
-<!-- Modal de confirmation de suppression -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -204,7 +199,7 @@ $form_fields = $current_structure['form_fields'];
 </div>
 
 <script>
-    // Configurer la modal de suppression
+
     document.addEventListener('DOMContentLoaded', function() {
         const deleteButtons = document.querySelectorAll('.delete-btn');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
@@ -213,37 +208,35 @@ $form_fields = $current_structure['form_fields'];
 
         deleteButtons.forEach(button => {
             button.addEventListener('click', function(event) {
-                // Empêcher le comportement par défaut du lien
+    
                 event.preventDefault();
                 
                 deleteId = this.getAttribute('data-id');
                 const name = this.getAttribute('data-name') || 'cet élément';
                 deleteType = this.getAttribute('data-type');
 
-                // Mettre à jour le texte du modal
                 deleteItemName.textContent = name;
-                
-                // Ouvrir la modal manuellement
+
                 const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
                 deleteModal.show();
             });
         });
 
-        // Gestionnaire de l'événement pour le bouton de confirmation
+  
         confirmDeleteBtn.addEventListener('click', function() {
-            // Utilisation du bon format d'URL pour l'API
+
             const url = `https://clafoutis.alwaysdata.net/SAE401/api/${deleteType}/${deleteId}?action=delete`;
             
-            // Fermer le modal
+
             const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
             deleteModal.hide();
             
-            // Appel API pour la suppression
+       
             fetch(url, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Api': 'e8f1997c763' // Ajouter la clé API qui est nécessaire
+                    'Api': 'e8f1997c763' 
                 }
             })
             .then(response => {
@@ -255,7 +248,7 @@ $form_fields = $current_structure['form_fields'];
                 return response.json();
             })
             .then(data => {
-                // Reload la page avec paramètre de succès
+ 
                 window.location.href = `/SAE401/${deleteType}?delete=1`;
             })
             .catch(error => {
@@ -265,23 +258,22 @@ $form_fields = $current_structure['form_fields'];
         });
     });
 
-    // Fonction pour mettre en majuscule la première lettre
+
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    // Gestion de l'icône dans les en-têtes repliables
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Sélectionner tous les en-têtes repliables
+
         const collapseHeaders = document.querySelectorAll('.collapse-header');
         
-        // Pour chaque en-tête, ajouter un gestionnaire d'événement
+
         collapseHeaders.forEach(header => {
             const targetId = header.getAttribute('data-bs-target');
             const collapseElement = document.querySelector(targetId);
             const icon = header.querySelector('.collapse-icon');
             
-            // Écouter l'événement show.bs.collapse et hide.bs.collapse sur l'élément repliable
             if (collapseElement) {
                 collapseElement.addEventListener('show.bs.collapse', function() {
                     if (icon) icon.classList.replace('fa-chevron-down', 'fa-chevron-up');

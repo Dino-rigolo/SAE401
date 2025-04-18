@@ -3,14 +3,10 @@ include_once('www/header.inc.php');
 
 error_log("Loading ViewModifProduct.php for type: " . ($GLOBALS['page_type'] ?? 'unknown'));
 error_log("Item data: " . json_encode($GLOBALS['item_data'] ?? 'not set'));
-
-// Récupérer le type et l'ID depuis l'URL
 $page_type = $GLOBALS['page_type'];
 $item = $GLOBALS['item_data'];
 $structure = $GLOBALS['product_structure'];
 $select_options = $GLOBALS['product_select_options'];
-
-// Récupérer la structure pour le type actuel
 $current_structure = isset($structure[$page_type]) ? $structure[$page_type] : $structure['brands'];
 $form_fields = $current_structure['form_fields'];
 $id_field = $current_structure['id_field'];
@@ -57,8 +53,7 @@ error_log("Données de l'élément : " . json_encode($item));
                                                     <?php 
                                                     $option_field_name = $field['name']; 
                                                     $option_value = isset($option[$option_field_name]) ? $option[$option_field_name] : null;
-                                                    
-                                                    // Déterminer le label à afficher selon le type de select
+
                                                     $option_label = 'Unknown';
                                                     if ($field['source'] === 'brands' && isset($option['brand_name'])) {
                                                         $option_label = $option['brand_name'];
@@ -70,7 +65,6 @@ error_log("Données de l'élément : " . json_encode($item));
                                                         $option_label = $option['product_name'];
                                                     }
 
-                                                    // Vérifier si l'ID courant correspond à l'option
                                                     $is_selected = isset($item[$field['name']]) && $item[$field['name']] == $option_value;
                                                     ?>
                                                     <option value="<?php echo htmlspecialchars($option_value); ?>" <?php echo $is_selected ? 'selected' : ''; ?>>

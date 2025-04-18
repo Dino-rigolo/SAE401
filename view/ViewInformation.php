@@ -1,17 +1,12 @@
 <?php 
 include_once('www/header.inc.php');
 
-// Vérifier si l'employé est connecté
 if (!isset($_SESSION['employee'])) {
-    // Rediriger vers la page de connexion si non connecté
     header('Location: /SAE401/connexion');
     exit;
 }
 
-// Récupérer les informations de l'employé
 $employee = $_SESSION['employee'];
-
-// Récupérer les informations du magasin si disponible
 $store_name = 'Non assigné';
 if (isset($employee['store_id']) && !empty($employee['store_id'])) {
     $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/stores/{$employee['store_id']}");

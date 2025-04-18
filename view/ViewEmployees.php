@@ -1,10 +1,8 @@
 <?php 
 include_once('www/header.inc.php');
 
-// Charger FontAwesome pour les icônes
 echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
 
-// Utilisez les données passées par le contrôleur
 $employees = $GLOBALS['employees_data'];
 $stores = $GLOBALS['stores_data'];
 ?>
@@ -36,12 +34,10 @@ $stores = $GLOBALS['stores_data'];
     </div>
 
     <?php 
-    // Si l'utilisateur est chief, il ne peut gérer que son magasin
     $storeFilter = ($_SESSION['employee']['employee_role'] === 'chief') 
         ? $_SESSION['employee']['store_id'] 
         : null;
     
-    // Parcourir tous les magasins (pour IT) ou seulement le magasin de l'utilisateur (pour chief)
     foreach ($stores as $store):
         if ($storeFilter === null || $store['store_id'] == $storeFilter):
     ?>
@@ -51,7 +47,6 @@ $stores = $GLOBALS['stores_data'];
             <div class="card shadow-sm">
                 <div class="card-body">
                     <?php
-                    // Filtrer les employés pour ce magasin
                     $storeEmployees = array_filter($employees, function($emp) use ($store) {
                         return $emp['store_id'] == $store['store_id'];
                     });
@@ -104,7 +99,6 @@ $stores = $GLOBALS['stores_data'];
                         <p class="text-center">No employees found for this store.</p>
                     <?php endif; ?>
                     
-                    <!-- Formulaire d'ajout d'employé -->
                     <div class="mt-4">
                         <h6 class="text-center mb-3">Add New Employee</h6>
                         <form action="/SAE401/addemployees" method="POST" class="row g-3">
@@ -145,12 +139,10 @@ $stores = $GLOBALS['stores_data'];
         </div>
     </div>
     <?php 
-        endif; // Fin de la condition de filtrage des magasins
-    endforeach; // Fin de la boucle des magasins
+        endif; 
+    endforeach; 
     ?>
 </div>
-
-<!-- Modal de confirmation de suppression -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -170,7 +162,7 @@ $stores = $GLOBALS['stores_data'];
 </div>
 
 <script>
-    // Configurer la modal de suppression
+
     document.addEventListener('DOMContentLoaded', function() {
         const deleteButtons = document.querySelectorAll('.delete-btn');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');

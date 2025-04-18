@@ -28,15 +28,15 @@ include_once('www/header.inc.php');
                             <li class="list-group-item bg-light">Engaging in fraudulent activity</li>
                             <li class="list-group-item bg-light">Posting, transmitting, or otherwise distributing harmful, offensive, or illegal content</li>
                             <li class="list-group-item bg-light">Interfering with or disrupting the operation of the Site or servers connected to the Site</li>
+                            <li class="list-group-item bg-light">Any unauthorized use may result in the termination of access and possible legal action</li>
                         </ul>
                     </div>
 
                     <div class="mb-4">
                         <h3 class="text-success mb-3">3. Employee Login and Cookies</h3>
-                        <p>The Site includes a login feature that is exclusive to BikeStores employees. If you are not an employee, you are not authorized to attempt login.</p>
-                        <p>We use cookies to enhance your experience and facilitate the login process for authorized personnel. If an employee leaves the Site and returns later, they may remain logged in for convenience. By continuing to use the Site, you consent to our use of cookies as described in our <a href="/SAE401/privacy" class="text-success">Privacy Policy</a>.</p>
-                        <p>For further details about how we collect and manage your information, please review our full <a href="/SAE401/privacy" class="text-success">Privacy Policy</a>.</p>
-                    </div>
+                        <p>The Site includes a login feature exclusively for BikeStores employees. Unauthorized login attempts are prohibited.</p>
+                        <p>We use cookies to Improve site functionality, Support employee login sessions.</p>
+                        <p>By continuing to use the Site, you consent to our use of cookies. You can manage cookie preferences through your browser settings.</p>
 
                     <div class="mb-4">
                         <h3 class="text-success mb-3">4. Intellectual Property Rights</h3>
@@ -45,7 +45,19 @@ include_once('www/header.inc.php');
 
                     <div class="mb-4">
                         <h3 class="text-success mb-3">5. Privacy Policy</h3>
-                        <p>Your use of the Site is also governed by our <a href="/SAE401/privacy" class="text-success">Privacy Policy</a>, which outlines how we collect, use, and protect your personal data. We encourage you to read our Privacy Policy to understand our practices in detail.</p>
+                        <p>We collect the following types of information:</p>
+                        <ul>
+                            <label>Information You Provide:</label>
+                            <li>Name, email address, phone number, or any personal data submitted through forms or email.</li> <br>
+
+                            <label>Automatically Collected Information:</label>
+                            <li>IP address, browser type, pages visited, time spent, and device data collected via cookies or analytics tools.</li><br>
+
+                            <label>Employee Login Data:</label>
+                            <li>Authentication credentials and session data used for managing secure employee access.</li>
+                        </ul>
+                        <p>How We Use Your Data</p>
+                        <p>We use your information to Improve user experience, Maintain security and website performance, Comply with legal obligations. We do not sell your data.</p>
                     </div>
 
                     <div class="mb-4">

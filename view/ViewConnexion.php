@@ -1,5 +1,5 @@
 <?php 
-// Vérifier si la session est déjà démarrée avant de la démarrer
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
