@@ -24,13 +24,10 @@ class ViewError {
      * Affiche la page d'erreur
      */
     public function display() {
-        // Titre de la page d'erreur en fonction du code HTTP
         $errorTitle = $this->getErrorTitle($this->statusCode);
         
-        // Inclure l'en-tête de la page
         include_once 'www/header.inc.php';
-        
-        // Afficher le contenu de la page d'erreur
+
         ?>
         <div class="error-container">
             <div class="error-card">
@@ -55,17 +52,17 @@ class ViewError {
     private function getErrorTitle($statusCode) {
         switch ($statusCode) {
             case 400:
-                return "Requête incorrecte";
+                return "Bad Request";
             case 401:
-                return "Non autorisé";
+                return "Unauthorized";
             case 403:
-                return "Accès interdit";
+                return "Access Forbidden";
             case 404:
-                return "Page non trouvée";
+                return "Page Not Found";
             case 500:
-                return "Erreur interne du serveur";
+                return "Internal Server Error";
             default:
-                return "Une erreur est survenue";
+                return "An Error Occurred";
         }
     }
 }

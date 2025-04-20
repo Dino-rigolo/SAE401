@@ -10,19 +10,19 @@ $stores = $GLOBALS['stores_data'];
 <div class="container-fluid my-5">
     <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            Employé ajouté avec succès !
+            Employee added successfully!
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
     <?php if (isset($_GET['update']) && $_GET['update'] == 1): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            Employé modifié avec succès !
+            Employee modified successfully!
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
     <?php if (isset($_GET['delete']) && $_GET['delete'] == 1): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            Employé supprimé avec succès !
+            Employee deleted successfully!
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
@@ -147,11 +147,11 @@ $stores = $GLOBALS['stores_data'];
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <h5 class="modal-title" id="deleteModalLabel">Confirm deletion</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Êtes-vous sûr de vouloir supprimer <span id="deleteItemName"></span> ?
+                Are you sure you want to delete <span id="deleteItemName"></span> ?
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>

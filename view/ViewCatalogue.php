@@ -41,7 +41,7 @@ include_once('www/header.inc.php');
             <div class="spinner-border text-success" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p>Chargement des produits...</p>
+            <p>Loading products...</p>
         </div>
     </div>
 </div>
@@ -172,7 +172,7 @@ include_once('www/header.inc.php');
         container.innerHTML = `
             <div class="col-12 text-center">
                 <div class="spinner-border text-success" role="status"></div>
-                <p>Chargement des produits...</p>
+                <p>Loading products...</p>
             </div>
         `;
 
@@ -187,7 +187,7 @@ include_once('www/header.inc.php');
                 container.innerHTML = '';
 
                 if (!Array.isArray(data) || data.length === 0) {
-                    container.innerHTML = '<div class="col-12 text-center"><p>Aucun produit trouvé.</p></div>';
+                    container.innerHTML = '<div class="col-12 text-center"><p>No products found.</p></div>';
                     return;
                 }
 
@@ -210,7 +210,7 @@ include_once('www/header.inc.php');
             })
             .catch(error => {
                 console.error('Erreur lors du chargement des produits:', error);
-                container.innerHTML = '<div class="col-12 text-center text-danger"><p>Erreur lors du chargement des produits: ' + error.message + '</p></div>';
+                container.innerHTML = '<div class="col-12 text-center text-danger"><p>Error loading products: ' + error.message + '</p></div>';
             });
     }
 </script>

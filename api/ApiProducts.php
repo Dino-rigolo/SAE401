@@ -237,10 +237,10 @@ switch ($request_method) {
                     $entityManager->flush();
                     echo json_encode(['message' => 'Product deleted']);
                 } else {
-                    throw new Exception('Product not found pour delete.');
+                    throw new Exception('Product not found');
                 }
             } else {
-                throw new Exception('Invalid action pour delete.');
+                throw new Exception('Invalid action');
             }
         } catch (Exception $e) {
             echo json_encode(['error' => $e->getMessage()]);

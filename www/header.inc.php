@@ -59,7 +59,7 @@
                             <li><a class="dropdown-item <?php echo ($currentPath === 'products' && $currentType === 'stocks') ? 'active' : ''; ?>" href="/SAE401/products?type=stocks">Stocks</a></li>
                         </ul>
                     </li>
-                    <?php if(isset($_SESSION['employee']['employee_role']) && ($_SESSION['employee']['employee_role'] === 'chef' || $_SESSION['employee']['employee_role'] === 'it')): ?>
+                    <?php if(isset($_SESSION['employee']['employee_role']) && ($_SESSION['employee']['employee_role'] === 'chief' || $_SESSION['employee']['employee_role'] === 'it')): ?>
                         <li class="nav-item">
                             <a class="nav-link text-white <?php echo ($currentPath === 'employees') ? 'active' : ''; ?>" href="/SAE401/employees">Employees</a>
                         </li>
@@ -90,7 +90,7 @@
     </div>
    </nav>
 </header>
-
+<main>
 <?php
 // Affichage des messages d'erreur seulement s'ils existent
 if(isset($_SESSION["error"]) && $_SESSION["error"] != ""){

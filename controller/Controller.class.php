@@ -42,18 +42,39 @@ class Controller {
     }
     
     private function checkAuthCookie() {
+        error_log("RECEIVED COOKIES: " . print_r($_COOKIE, true));
         if (isset($_COOKIE['sae401_auth'])) {
             try {
+                error_log("Checking authentication cookie");
                 $cookieData = json_decode(base64_decode($_COOKIE['sae401_auth']), true);
                 
+                          ", email=" . isset($cookieData['email']) . 
+                          ", expires=" . isset($cookieData['expires']) . 
+                          ", hash=" . isset($cookieData['hash']);
                 if (!isset($cookieData['id']) || !isset($cookieData['email']) || 
                     !isset($cookieData['expires']) || !isset($cookieData['hash'])) {
-                    setcookie('sae401_auth', '', time() - 3600, '/');
+                    error_log("Incomplete cookie, deleting");
+                    setcookie('sae401_auth', '', [
+                        'expires' => time() - 3600,
+                        'path' => '/',
+                        'domain' => '.clafoutis.alwaysdata.net',
+                        'secure' => true,
+                        'httponly' => true,
+                        'samesite' => 'None'
+                    ]);
                     return;
                 }
                 
                 if ($cookieData['expires'] < time()) {
-                    setcookie('sae401_auth', '', time() - 3600, '/');
+                    error_log("Expired cookie, deleting");
+                    setcookie('sae401_auth', '', [
+                        'expires' => time() - 3600,
+                        'path' => '/',
+                        'domain' => '.clafoutis.alwaysdata.net',
+                        'secure' => true,
+                        'httponly' => true,
+                        'samesite' => 'None'
+                    ]);
                     return;
                 }
                 
@@ -64,10 +85,19 @@ class Controller {
                 curl_close($ch);
                 
                 $employee = json_decode($response, true);
+                error_log("API Response: " . json_encode($employee));
                 
                 if (!$employee || isset($employee['error']) || 
                     !isset($employee['employee_id']) || !isset($employee['employee_password'])) {
-                    setcookie('sae401_auth', '', time() - 3600, '/');
+                    error_log("Invalid employee data, deleting cookie");
+                    setcookie('sae401_auth', '', [
+                        'expires' => time() - 3600,
+                        'path' => '/',
+                        'domain' => '.clafoutis.alwaysdata.net',
+                        'secure' => true,
+                        'httponly' => true,
+                        'samesite' => 'None'
+                    ]);
                     return;
                 }
                 
@@ -88,14 +118,37 @@ class Controller {
                     setcookie(
                         'sae401_auth', 
                         $cookieValue,
-                        time() + (30 * 24 * 60 * 60),
-                        '/' 
+                        [
+                            'expires' => time() + (30 * 24 * 60 * 60),
+                            'path' => '/',
+                            'domain' => '.clafoutis.alwaysdata.net',
+                            'secure' => true,
+                            'httponly' => true, 
+                            'samesite' => 'None'
+                        ]
                     );
+                    error_log("Automatic reconnection successful for: " . $employee['employee_email']);
                 } else {
-                    setcookie('sae401_auth', '', time() - 3600, '/');
+                    error_log("Invalid hash, deleting cookie");
+                    setcookie('sae401_auth', '', [
+                        'expires' => time() - 3600,
+                        'path' => '/',
+                        'domain' => '.clafoutis.alwaysdata.net',
+                        'secure' => true,
+                        'httponly' => true,
+                        'samesite' => 'None'
+                    ]);
                 }
             } catch (Exception $e) {
-                setcookie('sae401_auth', '', time() - 3600, '/');
+                error_log("Error in checkAuthCookie: " . $e->getMessage());
+                setcookie('sae401_auth', '', [
+                    'expires' => time() - 3600,
+                    'path' => '/',
+                    'domain' => '.clafoutis.alwaysdata.net',
+                    'secure' => true,
+                    'httponly' => true,
+                    'samesite' => 'None'
+                ]);
             }
         }
     }
@@ -151,13 +204,13 @@ class Controller {
             
             $isConnected = isset($_SESSION['employee']);
             $isEmployee = $isConnected && isset($_SESSION['employee']);
-            $isChef = $isConnected && isset($_SESSION['employee']) && $_SESSION['employee']['employee_role'] === 'chef';
+            $isChef = $isConnected && isset($_SESSION['employee']) && $_SESSION['employee']['employee_role'] === 'chief';
             $isIT = $isConnected && isset($_SESSION['employee']) && $_SESSION['employee']['employee_role'] === 'it';
             
             $publicPages = ['home', 'catalogue', 'connexion', 'shop', 'terms'];
             
             if (!$isConnected && !in_array($this->action, $publicPages)) {
-                throw new ControllerException("Vous devez être connecté pour accéder à cette page", 401);
+                throw new ControllerException("You must be logged in to access this page", 401);
             }
             
             if (!$isConnected) {
@@ -187,7 +240,7 @@ class Controller {
                         break;
 
                     default:
-                        throw new ControllerException("Page non trouvée", 404);
+                        throw new ControllerException("Page not found", 404);
                 }
             } else {
                 switch ($this->action) {
@@ -217,14 +270,14 @@ class Controller {
                         
                     case 'modifProduct':
                         if (!$isEmployee) {
-                            throw new ControllerException("Accès non autorisé", 403);
+                            throw new ControllerException("Access forbidden", 403);
                         }
                         $this->showModifProduct();
                         break;
                         
                     case 'employees':
                         if (!$isChef && !$isIT) {
-                            throw new ControllerException("Accès non autorisé", 403);
+                            throw new ControllerException("Access forbidden", 403);
                         }
                         $this->showEmployees();
                         break;
@@ -266,7 +319,7 @@ class Controller {
                         break;
                         
                     default:
-                        throw new ControllerException("Page non trouvée", 404);
+                        throw new ControllerException("Page not found", 404);
                 }
             }
             if (strpos($this->action, 'add') === 0) {
@@ -288,7 +341,7 @@ class Controller {
                 $remember = isset($_POST['remember']) ? true : false;
                 
                 if (empty($email) || empty($password)) {
-                    throw new Exception("Veuillez fournir un email et un mot de passe");
+                    throw new Exception("Please provide an email address and a password");
                 }
                 
                 $apiUrl = "https://clafoutis.alwaysdata.net/SAE401/api/ApiEmployees.php?action=getbyemail&email=" . urlencode($email);
@@ -298,7 +351,7 @@ class Controller {
                 $response = curl_exec($ch);
                 
                 if (curl_errno($ch)) {
-                    throw new Exception("Erreur de connexion à l'API");
+                    throw new Exception("API connection error");
                 }
                 
                 curl_close($ch);
@@ -306,15 +359,15 @@ class Controller {
                 $employee = json_decode($response, true);
                 
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new Exception("Erreur de traitement de la réponse");
+                    throw new Exception("Response processing error");
                 }
                 
                 if (isset($employee['error'])) {
-                    throw new Exception("Email non trouvé");
+                    throw new Exception("Incorrect email or password ");
                 }
                 
                 if (!isset($employee['employee_password'])) {
-                    throw new Exception("Données d'employé incomplètes");
+                    throw new Exception("Incomplete employee data");
                 }
                 
                 if ($password === $employee['employee_password']) {
@@ -339,19 +392,25 @@ class Controller {
                         setcookie(
                             'sae401_auth', 
                             $cookieValue,
-                            time() + (30 * 24 * 60 * 60),
-                            '/'
+                            [
+                                'expires' => time() + (30 * 24 * 60 * 60),
+                                'path' => '/',
+                                'domain' => '.clafoutis.alwaysdata.net',
+                                'secure' => true,
+                                'httponly' => true,
+                                'samesite' => 'None'
+                            ]
                         );
                         
-                        error_log("Cookie créé pour l'utilisateur: " . $employee['employee_email']);
+                        error_log("Cookie set: " . print_r($_COOKIE, true));
                     }
                     
-                    $_SESSION['success'] = "Connexion réussie";
+                    $_SESSION['success'] = "Successful connection";
                     
                     header('Location: /SAE401/home');
                     exit;
                 } else {
-                    throw new Exception("Mot de passe incorrect");
+                    throw new Exception("incorrect email or password");
                 }
             }
         } catch (Exception $e) {
@@ -362,7 +421,14 @@ class Controller {
     }
     
     private function doLogout() {
-    setcookie('sae401_auth', '', time() - 3600, '/');
+    setcookie('sae401_auth', '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'domain' => '.clafoutis.alwaysdata.net',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'None'
+    ]);
     
     session_unset();
     session_destroy();
@@ -408,31 +474,31 @@ class Controller {
     
     private function showShop() {
         if (!isset($this->id)) {
-            throw new ControllerException("ID de la boutique manquant", 400);
+            throw new ControllerException("Missing store ID", 400);
         }
         
         $apiUrl = "https://clafoutis.alwaysdata.net/SAE401/api/ApiStores.php?action=getbyid&id=" . urlencode($this->id);
         
-        error_log("Tentative d'accès à l'API: " . $apiUrl);
+        error_log("Attempt to access the API: " . $apiUrl);
         
         $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         
         if ($response === false) {
-            error_log("Erreur cURL: " . curl_error($ch));
-            throw new ControllerException("Erreur de connexion à l'API", 500);
+            error_log("cURL Error: " . curl_error($ch));
+            throw new ControllerException("API connection error", 500);
         }
         
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        error_log("Code de réponse HTTP: " . $httpCode);
+        error_log("HTTP Response Code: " . $httpCode);
         
         curl_close($ch);
         
         $store = json_decode($response, true);
         
         if (isset($store['error'])) {
-            error_log("Erreur API: " . $store['error']);
+            error_log("API Error: " . $store['error']);
             throw new ControllerException($store['error'], 404);
         }
         
@@ -445,7 +511,7 @@ class Controller {
     
     private function showProduct() {
         if (!isset($this->id)) {
-            throw new ControllerException("ID du produit manquant", 400);
+            throw new ControllerException("Missing product ID", 400);
         }
         
         $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/products/{$this->id}");
@@ -455,7 +521,7 @@ class Controller {
         curl_close($ch);
         
         if (empty($product)) {
-            throw new ControllerException("Produit non trouvé", 404);
+            throw new ControllerException("Product not found", 404);
         }
         
         require_once __DIR__ . '/../view/ViewProduct.php';
@@ -463,7 +529,7 @@ class Controller {
     
     private function showModifProduct() {
         if (!isset($this->id)) {
-            throw new ControllerException("ID du produit manquant", 400);
+            throw new ControllerException("Missing product ID", 400);
         }
         
         $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/products/{$this->id}");
@@ -473,7 +539,7 @@ class Controller {
         curl_close($ch);
         
         if (empty($product)) {
-            throw new ControllerException("Produit non trouvé", 404);
+            throw new ControllerException("Product not found", 404);
         }
         
         $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/categories");
@@ -653,10 +719,10 @@ class Controller {
         if ($type === 'stocks') {
             foreach ($data as $key => $stock) {
                 if (!isset($stock['store_name'])) {
-                    $data[$key]['store_name'] = 'N/A';
+                    $data[$key]['store_name'] = 'Not specified';
                 }
                 if (!isset($stock['product_name'])) {
-                    $data[$key]['product_name'] = 'N/A';
+                    $data[$key]['product_name'] = 'Not specified';
                 }
                 if (!isset($stock['quantity'])) {
                     $data[$key]['quantity'] = 0;
@@ -664,7 +730,7 @@ class Controller {
             }
         } elseif ($type === 'stocks') {
             $data = [];
-            error_log("API Stocks a retourné des données non valides");
+            error_log("API Stocks returned invalid data");
         }
 
         require_once __DIR__ . '/../view/ViewProduct.php';
@@ -692,7 +758,7 @@ class Controller {
 
     private function handleAdd() {
         if (!isset($_SESSION['employee'])) {
-            throw new ControllerException("Vous devez être connecté pour effectuer cette action", 401);
+            throw new ControllerException("You must be logged in to perform this action", 401);
         }
         
         $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
@@ -701,11 +767,11 @@ class Controller {
         
         $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks'];
         if (!in_array($type, $validTypes)) {
-            throw new ControllerException("Type d'élément invalide", 400);
+            throw new ControllerException("Invalid element type", 400);
         }
         
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            throw new ControllerException("Méthode non autorisée", 405);
+            throw new ControllerException("Unauthorised method", 405);
         }
         
         $apiUrls = [
@@ -730,19 +796,19 @@ if ($type === 'stocks') {
     }
     
     if (!isset($data['store_id']) || !isset($data['product_id']) || !isset($data['quantity'])) {
-        throw new ControllerException("Données incomplètes pour l'ajout de stock", 400);
+        throw new ControllerException("Incomplete data for adding stock", 400);
     }
     
-    error_log("Envoi de données de stock: store_id=" . $data['store_id'] . ", product_id=" . $data['product_id'] . ", quantity=" . $data['quantity']);
+    error_log("Sending stock data: store_id=" . $data['store_id'] . ", product_id=" . $data['product_id'] . ", quantity=" . $data['quantity']);
 }
 
-error_log("Données envoyées à l'API: " . json_encode($data));
+error_log("Data sent to the API: " . json_encode($data));
 
 $apiUrl = $apiUrls[$type];
 if ($type === 'stocks') {
     $apiUrl .= '?action=create';
     
-    error_log("Données de stock envoyées: " . json_encode([
+    error_log("Stock data sent: " . json_encode([
         'store_id' => $data['store_id'],
         'product_id' => $data['product_id'],
         'quantity' => $data['quantity']
@@ -751,7 +817,7 @@ if ($type === 'stocks') {
     $apiUrl .= '?action=create';
 }
 
-error_log("URL API complète: " . $apiUrl);
+error_log("Full API URL: " . $apiUrl);
         
         $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -772,7 +838,7 @@ error_log("URL API complète: " . $apiUrl);
         
         if ($httpCode >= 400) {
             $error = json_decode($response, true);
-            throw new ControllerException("Erreur lors de l'ajout: " . ($error['error'] ?? "Erreur inconnue"), 400);
+            throw new ControllerException("Error when adding: " . ($error['error'] ?? "Unknown error"), 400);
         }
         
         header("Location: /SAE401/products?type=$type&success=1");
@@ -781,7 +847,7 @@ error_log("URL API complète: " . $apiUrl);
 
     private function addEmployees() {
         if (!isset($_SESSION['employee'])) {
-            throw new ControllerException("Accès non autorisé", 401);
+            throw new ControllerException("Unauthorized", 401);
         }
         
         $userRole = $_SESSION['employee']['employee_role'];
@@ -796,13 +862,13 @@ error_log("URL API complète: " . $apiUrl);
         }
         
         if (!$hasPermission) {
-            throw new ControllerException("Vous n'avez pas les droits pour ajouter un employé dans ce magasin", 403);
+            throw new ControllerException("You do not have the rights to add an employee to this shop", 403);
         }
         
         if (!isset($_POST['employee_name']) || !isset($_POST['employee_email']) || 
             !isset($_POST['employee_password']) || !isset($_POST['employee_role']) || 
             !isset($_POST['store_id'])) {
-            throw new ControllerException("Données incomplètes", 400);
+            throw new ControllerException("Incomplete data", 400);
         }
         
         $validRoles = ['employee'];
@@ -811,7 +877,7 @@ error_log("URL API complète: " . $apiUrl);
         }
         
         if (!in_array($_POST['employee_role'], $validRoles)) {
-            throw new ControllerException("Rôle non autorisé", 400);
+            throw new ControllerException("Unauthorised role", 400);
         }
         
         $data = [
@@ -837,7 +903,7 @@ error_log("URL API complète: " . $apiUrl);
         
         if ($httpCode >= 400) {
             $error = json_decode($response, true);
-            throw new ControllerException("Erreur lors de l'ajout: " . ($error['error'] ?? "Erreur inconnue"), 400);
+            throw new ControllerException("Error when adding: " . ($error['error'] ?? "Unknown error"), 400);
         }
         
         header("Location: /SAE401/employees?success=1");
@@ -847,7 +913,7 @@ error_log("URL API complète: " . $apiUrl);
 
     private function handleUpdate() {
         if (!isset($_SESSION['employee'])) {
-            throw new ControllerException("Vous devez être connecté pour effectuer cette action", 401);
+            throw new ControllerException("You must be logged in to perform this action", 401);
         }
         
         $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
@@ -856,11 +922,11 @@ error_log("URL API complète: " . $apiUrl);
         
         $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks', 'employees'];
         if (!in_array($type, $validTypes)) {
-            throw new ControllerException("Type d'élément invalide", 400);
+            throw new ControllerException("Invalid element type", 400);
         }
         
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            throw new ControllerException("Méthode non autorisée", 405);
+            throw new ControllerException("Unauthorised method", 405);
         }
         
         $data = $_POST;
@@ -878,7 +944,7 @@ error_log("URL API complète: " . $apiUrl);
         $id = isset($data[$id_field]) ? $data[$id_field] : null;
         
         if (empty($id)) {
-            throw new ControllerException("ID manquant pour la mise à jour", 400);
+            throw new ControllerException("Missing ID for update", 400);
         }
         
         $apiUrls = [
@@ -890,7 +956,7 @@ error_log("URL API complète: " . $apiUrl);
             'employees' => "https://clafoutis.alwaysdata.net/SAE401/api/employees/{$id}?action=update"
         ];
         
-        error_log("Données envoyées à l'API pour mise à jour: " . json_encode($data));
+        error_log("Data sent to the API for update: " . json_encode($data));
         
         $ch = curl_init($apiUrls[$type]);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -911,7 +977,7 @@ error_log("URL API complète: " . $apiUrl);
         
         if ($httpCode >= 400) {
             $error = json_decode($response, true);
-            throw new ControllerException("Erreur lors de la mise à jour: " . ($error['error'] ?? "Erreur inconnue"), 400);
+            throw new ControllerException("Error during update: " . ($error['error'] ?? "Unknown error"), 400);
         }
         
         header("Location: /SAE401/products?type=$type&update=1");
@@ -922,7 +988,7 @@ error_log("URL API complète: " . $apiUrl);
         $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
         
         if (count($urlParts) < 3) {
-            throw new ControllerException("URL invalide", 400);
+            throw new ControllerException("Bad request", 400);
         }
         
         $action = $urlParts[1];
@@ -931,12 +997,12 @@ error_log("URL API complète: " . $apiUrl);
         $id = isset($this->id) ? $this->id : (isset($urlParts[2]) ? $urlParts[2] : null);
 
         if (empty($id)) {
-            throw new ControllerException("ID manquant", 400);
+            throw new ControllerException("Missing ID", 400);
         }
         
         $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks', 'employees'];
         if (!in_array($type, $validTypes)) {
-            throw new ControllerException("Type d'élément invalide", 400);
+            throw new ControllerException("Invalid element type", 400);
         }
         
         $apiEndpoints = [
@@ -953,10 +1019,10 @@ error_log("URL API complète: " . $apiUrl);
         $response = curl_exec($ch);
         $item = json_decode($response, true);
 
-error_log("Données récupérées pour $type : " . json_encode($item));
+error_log("Data retrieved for $type: " . json_encode($item));
 
 if (empty($item) || isset($item['error'])) {
-    throw new ControllerException("Élément non trouvé ou erreur API", 404);
+    throw new ControllerException("Element not found or API error", 404);
 }
 
 error_log("API Response for $type/$id: " . $response);
@@ -1089,7 +1155,7 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
 
     private function handleDelete() {
         if (!isset($_SESSION['employee'])) {
-            throw new ControllerException("Vous devez être connecté pour effectuer cette action", 401);
+            throw new ControllerException("You must be logged in to perform this action", 401);
         }
 
         $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
@@ -1098,15 +1164,15 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
 
         $type = str_replace('delete', '', $action);
 
-        error_log("Type : $type, ID : $id");
+        error_log("Type: $type, ID: $id");
 
         $validTypes = ['brands', 'categories', 'shops', 'products', 'stocks', 'employees'];
         if (!in_array($type, $validTypes)) {
-            throw new ControllerException("Type d'élément invalide", 400);
+            throw new ControllerException("Invalid element type", 400);
         }
 
         if (empty($id)) {
-            throw new ControllerException("ID manquant pour la suppression", 400);
+            throw new ControllerException("Missing ID for deletion", 400);
         }
 
         $apiUrls = [
@@ -1118,7 +1184,7 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
             'employees' => "https://clafoutis.alwaysdata.net/SAE401/api/employees/{$id}?action=delete"
         ];
 
-        error_log("URL API : " . $apiUrls[$type]);
+        error_log("API URL: " . $apiUrls[$type]);
 
         $ch = curl_init($apiUrls[$type]);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1127,12 +1193,12 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        error_log("Réponse de l'API : " . $response);
-        error_log("Code HTTP : " . $httpCode);
+        error_log("API response: " . $response);
+        error_log("HTTP Code: " . $httpCode);
 
         if ($httpCode >= 400) {
             $error = json_decode($response, true);
-            throw new ControllerException("Erreur lors de la suppression : " . ($error['error'] ?? "Erreur inconnue"), 400);
+            throw new ControllerException("Deletion error : " . ($error['error'] ?? "Unknown error"), 400);
         }
 
         header("Location: /SAE401/products?type={$type}&delete=1");

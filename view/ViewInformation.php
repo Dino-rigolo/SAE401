@@ -7,7 +7,7 @@ if (!isset($_SESSION['employee'])) {
 }
 
 $employee = $_SESSION['employee'];
-$store_name = 'Non assigné';
+$store_name = 'Not assigned';
 if (isset($employee['store_id']) && !empty($employee['store_id'])) {
     $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/stores/{$employee['store_id']}");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -24,7 +24,7 @@ if (isset($employee['store_id']) && !empty($employee['store_id'])) {
 <div class="container my-5">
     <div class="row mb-4">
         <div class="col text-center">
-            <h1 class="fw-bold">Informations de l'employé</h1>
+            <h1 class="fw-bold">Employee Information</h1>
         </div>
     </div>
 
@@ -58,10 +58,10 @@ if (isset($employee['store_id']) && !empty($employee['store_id'])) {
                             <div class="col-md-8">
                                 <?php 
                                 $role_display = [
-                                    'it' => 'Équipe IT',
-                                    'sales' => 'Commercial',
-                                    'chief' => 'Chef de magasin',
-                                    'employee' => 'Employé'
+                                    'it' => 'IT Team',
+                                    'sales' => 'Sales',
+                                    'chief' => 'Store Manager',
+                                    'employee' => 'Employee'
                                 ];
                                 echo isset($role_display[$employee['employee_role']]) ? 
                                     htmlspecialchars($role_display[$employee['employee_role']]) : 

@@ -219,10 +219,10 @@ switch ($request_method) {
                     $entityManager->flush();
                     echo json_encode(['message' => 'Employee deleted']);
                 } else {
-                    throw new Exception('Employee not found pour delete.');
+                    throw new Exception('Employee not found.');
                 }
             } else {
-                throw new Exception('Invalid action pour delete.');
+                throw new Exception('Invalid action.');
             }
         } catch (Exception $e) {
             echo json_encode(['error' => $e->getMessage()]);

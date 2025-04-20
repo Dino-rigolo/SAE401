@@ -118,10 +118,10 @@ switch ($request_method) {
                     $entityManager->flush();
                     echo json_encode(['message' => 'Brand deleted']);
                 } else {
-                    throw new Exception('Brand not found pour delete.');
+                    throw new Exception('Brand not found');
                 }
             } else {
-                throw new Exception('Invalid action pour delete.');
+                throw new Exception('Invalid action');
             }
         } catch (Exception $e) {
             echo json_encode(['error' => $e->getMessage()]);
