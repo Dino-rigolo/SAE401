@@ -1,21 +1,75 @@
-<?php 
-include_once('www/header.inc.php');
+<?php
+/**
+ * Product Management View
+ * 
+ * Provides a comprehensive interface for managing products and related entities:
+ * - Lists all items in a paginated table
+ * - Supports filtering and sorting
+ * - Provides add/edit/delete functionality
+ * - Handles multiple entity types (products, brands, categories, stocks)
+ * 
+ * @package BikeStore\Views
+ * @author Your Name
+ * @version 1.0
+ */
 
+/**
+ * Include required files and stylesheets
+ */
+include_once('www/header.inc.php');
 echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
 
+/**
+ * Initialize view variables
+ * 
+ * @var string $page_type Type of entity being managed (brands|categories|products|stocks)
+ * @var string $title Display title for the current entity type
+ * @var array $data Collection of entities to display
+ * @var array $structure Form and table structure configuration
+ * @var array $select_options Options for select inputs
+ */
 $page_type = isset($_GET['type']) ? $_GET['type'] : 'brands';
-
 $title = $GLOBALS['product_title'];
 $data = $GLOBALS['product_data'];
 $structure = $GLOBALS['product_structure'];
 $select_options = $GLOBALS['product_select_options'];
 
-
+/**
+ * Set up current structure based on page type
+ * 
+ * @var array $current_structure Structure configuration for current entity type
+ * @var array $columns Table column headers
+ * @var array $fields Data fields to display
+ * @var string $id_field Primary key field name
+ * @var array $form_fields Form input field configurations
+ */
 $current_structure = isset($structure[$page_type]) ? $structure[$page_type] : $structure['brands'];
 $columns = $current_structure['columns'];
 $fields = $current_structure['fields'];
 $id_field = $current_structure['id_field'];
 $form_fields = $current_structure['form_fields'];
+
+/**
+ * JavaScript Documentation
+ * 
+ * @function handleDelete
+ * Handles item deletion:
+ * - Shows confirmation modal
+ * - Sends DELETE request to API
+ * - Handles success/error responses
+ * 
+ * @function initializeCollapse
+ * Initializes collapsible sections:
+ * - Manages collapse icons
+ * - Handles show/hide events
+ * 
+ * @event DOMContentLoaded
+ * Sets up event listeners and initializes UI components
+ * 
+ * @api DELETE /SAE401/api/{type}/{id}
+ * Endpoint for deleting items
+ * Requires API key in headers
+ */
 ?>
 
 <div class="container-fluid my-5">
@@ -287,6 +341,6 @@ $form_fields = $current_structure['form_fields'];
     });
 </script>
 
-<?php 
+<?php
 include_once('www/footer.inc.php');
 ?>

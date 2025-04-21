@@ -7,68 +7,110 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
+ * Stores Entity
+ * 
+ * Represents a physical store location in the BikeStore system
+ * Manages store information, inventory and employee assignments
+ * 
  * @ORM\Entity
  * @ORM\Table(name="stores")
+ * 
+ * @package BikeStore\Entity
+ * @author 
+ * @version 1.0
  */
 class Stores {
     /**
+     * Unique identifier for the store
+     * 
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
+     * 
+     * @var int Store ID
      */
     private int $store_id;
 
     /**
+     * Name of the store
+     * 
      * @ORM\Column(type="string")
+     * @var string Store name
      */
     private string $store_name;
 
     /**
+     * Store contact phone number
+     * 
      * @ORM\Column(type="string", nullable=true)
+     * @var ?string Phone number or null
      */
     private ?string $phone;
 
     /**
+     * Store contact email address
+     * 
      * @ORM\Column(type="string", nullable=true)
+     * @var ?string Email address or null
      */
     private ?string $email;
 
     /**
+     * Street address of the store
+     * 
      * @ORM\Column(type="string", nullable=true)
+     * @var ?string Street address or null
      */
     private ?string $street;
 
     /**
+     * City where the store is located
+     * 
      * @ORM\Column(type="string", nullable=true)
+     * @var ?string City name or null
      */
     private ?string $city;
 
     /**
+     * State/province where the store is located
+     * 
      * @ORM\Column(type="string", length=10, nullable=true)
+     * @var ?string State code or null
      */
     private ?string $state;
 
     /**
+     * Store's postal code
+     * 
      * @ORM\Column(type="string", length=5, nullable=true)
+     * @var ?string ZIP/Postal code or null
      */
     private ?string $zip_code;
 
     /**
+     * Collection of stock entries for this store
+     * 
      * @ORM\OneToMany(targetEntity="Stocks", mappedBy="store")
+     * @var Collection<Stocks> Collection of stock entries
      */
     private Collection $stocks;
 
     /**
+     * Collection of employees assigned to this store
+     * 
      * @ORM\OneToMany(targetEntity="Employees", mappedBy="store")
+     * @var Collection<Employees> Collection of employees
      */
     private Collection $employees;
 
+    /**
+     * Constructor
+     * Initializes collections for stocks and employees
+     */
     public function __construct() {
         $this->stocks = new ArrayCollection();
         $this->employees = new ArrayCollection();
     }
-
-    // Getters et setters pour chaque propriété
 
     /**
      * Get the value of store_id
@@ -297,6 +339,17 @@ class Stores {
             }
         }
         return $this;
+    }
+
+    /**
+     * Convert store to string representation
+     * 
+     * @return string Store information in HTML format
+     */
+    public function __toString(): string {
+        return "<p>Store: {$this->store_name}<br>
+                Address: {$this->street}, {$this->city}, {$this->state} {$this->zip_code}<br>
+                Contact: {$this->phone} | {$this->email}</p>";
     }
 }
 ?>

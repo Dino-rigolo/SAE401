@@ -1,13 +1,44 @@
-<?php 
+<?php
+/**
+ * Employee Information View
+ * 
+ * Displays detailed information about the currently logged-in employee:
+ * - Personal information (name)
+ * - Contact details (email)
+ * - Professional information (role, assigned store)
+ * 
+ * Requires authentication to access
+ * 
+ * @package BikeStore\Views
+ * @author Your Name
+ * @version 1.0
+ */
+
+/**
+ * Include header template
+ */
 include_once('www/header.inc.php');
 
+/**
+ * Check for authentication
+ * Redirect to login if not authenticated
+ */
 if (!isset($_SESSION['employee'])) {
     header('Location: /SAE401/connexion');
     exit;
 }
 
+/**
+ * @var array $employee Current employee data from session
+ * @var string $store_name Name of the store where employee works
+ */
 $employee = $_SESSION['employee'];
 $store_name = 'Not assigned';
+
+/**
+ * Fetch store information if employee is assigned to a store
+ * Makes API call to retrieve store details
+ */
 if (isset($employee['store_id']) && !empty($employee['store_id'])) {
     $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/stores/{$employee['store_id']}");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -19,6 +50,16 @@ if (isset($employee['store_id']) && !empty($employee['store_id'])) {
         $store_name = $store['store_name'];
     }
 }
+
+/**
+ * @var array $role_display Mapping of role codes to display names
+ */
+$role_display = [
+    'it' => 'IT Team',
+    'sales' => 'Sales',
+    'chief' => 'Store Manager',
+    'employee' => 'Employee'
+];
 ?>
 
 <div class="container my-5">
@@ -57,12 +98,6 @@ if (isset($employee['store_id']) && !empty($employee['store_id'])) {
                             <div class="col-md-4 fw-bold">Rôle :</div>
                             <div class="col-md-8">
                                 <?php 
-                                $role_display = [
-                                    'it' => 'IT Team',
-                                    'sales' => 'Sales',
-                                    'chief' => 'Store Manager',
-                                    'employee' => 'Employee'
-                                ];
                                 echo isset($role_display[$employee['employee_role']]) ? 
                                     htmlspecialchars($role_display[$employee['employee_role']]) : 
                                     htmlspecialchars($employee['employee_role']);
@@ -80,6 +115,9 @@ if (isset($employee['store_id']) && !empty($employee['store_id'])) {
     </div>
 </div>
 
-<?php 
+<?php
+/**
+ * Include footer template
+ */
 include_once('www/footer.inc.php');
 ?>

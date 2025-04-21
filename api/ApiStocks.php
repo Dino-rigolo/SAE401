@@ -1,9 +1,27 @@
 <?php
+/**
+ * Stocks API Controller
+ * 
+ * Handles CRUD operations for product stocks in stores:
+ * - GET: Retrieve stocks information
+ * - POST: Create new stock entry
+ * - PUT: Update existing stock
+ * - DELETE: Remove stock entry
+ * 
+ * @package BikeStore\API
+ * @author 
+ * @version 1.0
+ */
+
+/**
+ * Set HTTP headers for API access
+ */
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 
-require_once '../vendor/autoload.php'; 
+// Include required files
+require_once '../vendor/autoload.php';
 require_once '../src/Entity/Stocks.php';
 require_once '../src/Entity/Products.php';
 require_once '../src/Entity/Stores.php';
@@ -13,10 +31,21 @@ use Entity\Stores;
 use Entity\Stocks;
 use Entity\Products;
 
+/**
+ * API authentication key
+ * @var string
+ */
 define('API_KEY', 'e8f1997c763');
 
 $request_method = $_SERVER["REQUEST_METHOD"];
 
+/**
+ * Validates API key from request headers
+ * GET requests are exempt from authentication
+ * 
+ * @return void
+ * @throws Exception If API key is missing or invalid
+ */
 function validateApiKey() {
     $headers = getallheaders();
     if($_SERVER["REQUEST_METHOD"]=="GET"){
@@ -33,8 +62,43 @@ validateApiKey();
 $path_info = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
 $request = explode('/', trim($path_info, '/'));
 
+/**
+ * Process the request based on HTTP method
+ * 
+ * @api
+ * @example GET /api/ApiStocks.php?action=getall
+ * Get all stocks with store and product details
+ * 
+ * @example GET /api/ApiStocks.php?action=getbyid&id=1
+ * Get stock by ID with store and product details
+ * 
+ * @example POST /api/ApiStocks.php?action=create
+ * Create new stock with JSON body:
+ * {
+ *   "store_id": 1,
+ *   "product_id": 1,
+ *   "quantity": 100
+ * }
+ * 
+ * @example PUT /api/ApiStocks.php?action=update&id=1
+ * Update stock with JSON body:
+ * {
+ *   "product_id": 1,
+ *   "quantity": 150
+ * }
+ * 
+ * @example DELETE /api/ApiStocks.php?action=delete&id=1
+ * Delete stock by ID
+ */
 switch ($request_method) {
     case 'GET':
+        /**
+         * Handle GET requests for stocks
+         * 
+         * @param string $action Request action (getall|getbyid)
+         * @param int $id Stock ID for getbyid action
+         * @return json Response with stock data or error message
+         */
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "getall") {
                 $stocks = $entityManager->getRepository(Stocks::class)->findAll();
@@ -71,6 +135,15 @@ switch ($request_method) {
         }
         break;
     case 'POST':
+        /**
+         * Handle POST requests for stock creation
+         * 
+         * @param array $data JSON body containing:
+         *      - store_id: int Store identifier
+         *      - product_id: int Product identifier
+         *      - quantity: int Stock quantity
+         * @return json Response with success or error message
+         */
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "create") {
                 $data = json_decode(file_get_contents('php://input'), true);
@@ -122,6 +195,13 @@ switch ($request_method) {
         }
         break;
     case 'PUT':
+        /**
+         * Handle PUT requests for stock updates
+         * 
+         * @param int $id Stock ID to update
+         * @param array $data JSON body with updated stock data
+         * @return json Response with success or error message
+         */
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "update" && !empty($_REQUEST["id"])) {
                 $data = json_decode(file_get_contents('php://input'), true);
@@ -151,6 +231,12 @@ switch ($request_method) {
         }
         break;
     case 'DELETE':
+        /**
+         * Handle DELETE requests for stock removal
+         * 
+         * @param int $id Stock ID to delete
+         * @return json Response with success or error message
+         */
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "delete" && !empty($_REQUEST["id"])) {
                 $stock = $entityManager->find(Stocks::class, $_REQUEST["id"]);

@@ -1,10 +1,30 @@
-<?php 
+<?php
+/**
+ * Login View
+ * 
+ * Displays the login form with email and password fields
+ * Handles session messages and remember me functionality
+ * 
+ * @package BikeStore\Views
+ * @author 
+ * @version 1.0
+ */
 
+/**
+ * Start session if not already started
+ */
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
+/**
+ * Include header template
+ */
 include_once('www/header.inc.php');
+
+/**
+ * @var string $success Success message from session if present
+ */
 ?>
 
 <div class="container">
@@ -16,12 +36,17 @@ include_once('www/header.inc.php');
                 </div>
                 <div class="card-body p-4 bg-light">
                     <?php
+                    /**
+                     * Display success message if present in session
+                     * and remove it after display
+                     */
                     if (isset($_SESSION['success'])) {
                         echo "<div class='alert alert-success text-center'>{$_SESSION['success']}</div>";
                         unset($_SESSION['success']);
                     }
                     ?>
 
+                    <!-- Login form -->
                     <form action="/SAE401/connexion" method="POST">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
@@ -49,5 +74,8 @@ include_once('www/header.inc.php');
 </div>
 
 <?php 
+/**
+ * Include footer template
+ */
 include_once('www/footer.inc.php');
 ?>

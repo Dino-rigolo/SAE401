@@ -3,15 +3,46 @@
 require_once 'ControllerException.class.php';
 require_once __DIR__ . '/../bootstrap.php';
 
+/**
+ * Main Controller class for the BikeStore application
+ * 
+ * Handles all HTTP requests, authentication, and business logic
+ * for the BikeStore management system
+ * 
+ * @package BikeStore
+ * @author 
+ * @version 1.0
+ */
 class Controller {
+    /** @var EntityManager Doctrine entity manager instance */
     private $entityManager;
-    private $request;
-    private $action;
-    private $email;
-    private $password;
-    private $id;
-    private $role;
     
+    /** @var string Current request URI */
+    private $request;
+    
+    /** @var string Current action to execute */
+    private $action;
+    
+    /** @var string User email from request */
+    private $email;
+    
+    /** @var string User password from request */
+    private $password;
+    
+    /** @var int Entity ID from request */
+    private $id;
+    
+    /** @var string User role */
+    private $role;
+
+    /**
+     * Controller constructor
+     * 
+     * Initializes the controller, starts session if needed,
+     * checks authentication cookie and sets up request parameters
+     * 
+     * @param array $request_params Request parameters
+     */
     public function __construct($request_params = []) {
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
@@ -40,7 +71,16 @@ class Controller {
         
         $this->parseRequest();
     }
-    
+
+    /**
+     * Checks if user has a valid authentication cookie
+     * 
+     * Validates the auth cookie, fetches user data from API
+     * and creates a new session if cookie is valid
+     * 
+     * @return void
+     * @throws Exception If cookie validation fails
+     */
     private function checkAuthCookie() {
         error_log("RECEIVED COOKIES: " . print_r($_COOKIE, true));
         if (isset($_COOKIE['sae401_auth'])) {
@@ -172,7 +212,16 @@ class Controller {
             }
         }
     }
-    
+
+    /**
+     * Main execution method
+     * 
+     * Routes the request to appropriate handler methods
+     * based on action and user permissions
+     * 
+     * @return void
+     * @throws ControllerException For invalid requests or unauthorized access
+     */
     public function execute() {
         try {
             $this->action = isset($_REQUEST['action']) ? $_REQUEST['action'] : 'default';
@@ -332,7 +381,16 @@ class Controller {
             $this->handleError(new ControllerException($e->getMessage(), 500));
         }
     }
-    
+
+    /**
+     * Handles the login process
+     * 
+     * Validates credentials against the API, creates session
+     * and sets authentication cookie if "remember me" is checked
+     * 
+     * @return void
+     * @throws Exception For invalid credentials or API errors
+     */
     private function doLogin() {
         try {
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -419,7 +477,14 @@ class Controller {
             exit;
         }
     }
-    
+
+    /**
+     * Handles user logout
+     * 
+     * Removes authentication cookie and destroys session
+     * 
+     * @return void
+     */
     private function doLogout() {
     setcookie('sae401_auth', '', [
         'expires' => time() - 3600,
@@ -591,6 +656,14 @@ class Controller {
         $errorView->display();
     }
 
+    /**
+     * Shows product listing page
+     * 
+     * Displays products with filtering and sorting options
+     * 
+     * @param string $type Type of products to display (brands|categories|shops|products|stocks)
+     * @return void
+     */
     private function showProductsPage($type) {
         $_GET['type'] = $type;
         
@@ -756,6 +829,15 @@ class Controller {
         $this->showProductsPage('stocks');
     }
 
+    /**
+     * Handles addition of new entities
+     * 
+     * Processes POST requests to add new brands, categories,
+     * shops, products or stocks
+     * 
+     * @return void
+     * @throws ControllerException For validation or API errors
+     */
     private function handleAdd() {
         if (!isset($_SESSION['employee'])) {
             throw new ControllerException("You must be logged in to perform this action", 401);
@@ -910,7 +992,14 @@ error_log("Full API URL: " . $apiUrl);
         exit;
     }
 
-
+    /**
+     * Handles entity updates
+     * 
+     * Processes PUT requests to update existing entities
+     * 
+     * @return void
+     * @throws ControllerException For validation or API errors
+     */
     private function handleUpdate() {
         if (!isset($_SESSION['employee'])) {
             throw new ControllerException("You must be logged in to perform this action", 401);
@@ -1072,6 +1161,13 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
         require_once __DIR__ . '/../view/ViewModifProduct.php';
     }
 
+    /**
+     * Gets data structure for different entity types
+     * 
+     * Defines columns, fields and form structure for each entity type
+     * 
+     * @return array Multidimensional array of entity structures
+     */
     private function getStructure() {
         return [
             'brands' => [

@@ -1,3 +1,28 @@
+<?php
+/**
+ * Header Template
+ * 
+ * Provides the common header structure for all pages including:
+ * - HTML doctype and meta tags
+ * - Bootstrap integration
+ * - Navigation menu with dynamic highlighting
+ * - User authentication status
+ * - Error message display
+ * 
+ * @package BikeStore\Templates
+ * @author Your Name
+ * @version 1.0
+ */
+
+/**
+ * Navigation variables
+ * 
+ * @var string $currentPage Current page from URL parameters
+ * @var string $currentAction Current action from URL parameters
+ * @var string $currentType Current product type from URL parameters
+ * @var string $currentPath Current path from URL, stripped of parameters
+ */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,10 +31,28 @@
     <title>BikeStores - SAE 401</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- CSS personnalisé -->
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="/SAE401/www/css/style.css">
 </head>
 <body>
+
+<?php
+/**
+ * Process current URL to determine active navigation items
+ * Extracts path information for menu highlighting
+ */
+$currentPage = isset($_GET['page']) ? $_GET['page'] : '';
+$currentAction = isset($_GET['action']) ? $_GET['action'] : '';
+$currentType = isset($_GET['type']) ? $_GET['type'] : '';
+$uri = $_SERVER['REQUEST_URI'];
+$basePath = '/SAE401/';
+$currentPath = '';
+if (strpos($uri, $basePath) === 0) {
+    $currentPath = substr($uri, strlen($basePath));
+    // Remove query parameters and trailing slashes
+    $currentPath = preg_replace('/[\?\/].*$/', '', $currentPath);
+}
+?>
 
 <header>
    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #333; color: white;">
@@ -23,24 +66,6 @@
         </button>
         
         <div class="collapse navbar-collapse" id="navbarNav">
-            <?php
-            // Déterminer la page actuelle
-            $currentPage = isset($_GET['page']) ? $_GET['page'] : '';
-            $currentAction = isset($_GET['action']) ? $_GET['action'] : '';
-
-            // Si l'URL est de type /SAE401/products?type=brands, récupérer le type
-            $currentType = isset($_GET['type']) ? $_GET['type'] : '';
-
-            // Extrait la partie de l'URL après /SAE401/
-            $uri = $_SERVER['REQUEST_URI'];
-            $basePath = '/SAE401/';
-            $currentPath = '';
-            if (strpos($uri, $basePath) === 0) {
-                $currentPath = substr($uri, strlen($basePath));
-                // Supprime tout ce qui vient après ? ou /
-                $currentPath = preg_replace('/[\?\/].*$/', '', $currentPath);
-            }
-            ?>
             <!-- Navigation principale -->
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
@@ -92,8 +117,14 @@
 </header>
 <main>
 <?php
-// Affichage des messages d'erreur seulement s'ils existent
-if(isset($_SESSION["error"]) && $_SESSION["error"] != ""){
+/**
+ * Error Message Display
+ * Shows error messages from session if they exist
+ * Clears the message after display
+ * 
+ * @var string $_SESSION["error"] Error message to display
+ */
+if(isset($_SESSION["error"]) && $_SESSION["error"] != "") {
     echo "<main class='container py-4'>";
     echo "<div class='alert alert-danger text-center'><p>{$_SESSION['error']}</p></div>";
     echo "</main>";

@@ -1,12 +1,45 @@
-<?php 
-include_once('www/header.inc.php');
+<?php
+/**
+ * Employees Management View
+ * 
+ * Displays and manages employees for each store:
+ * - Lists employees by store
+ * - Allows adding new employees
+ * - Provides edit and delete functionality
+ * - Handles role-based access control
+ * 
+ * @package BikeStore\Views
+ * @author Your Name
+ * @version 1.0
+ */
 
+/**
+ * Include header template and required CSS
+ */
+include_once('www/header.inc.php');
 echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">';
 
+/**
+ * @var array $employees Global array containing all employees data
+ * @var array $stores Global array containing all stores data
+ */
 $employees = $GLOBALS['employees_data'];
 $stores = $GLOBALS['stores_data'];
+
+/**
+ * Filter stores based on user role
+ * Chiefs can only see their own store
+ * IT staff can see all stores
+ * 
+ * @var int|null $storeFilter Store ID for filtering, null for IT staff
+ */
+$storeFilter = ($_SESSION['employee']['employee_role'] === 'chief') 
+    ? $_SESSION['employee']['store_id'] 
+    : null;
+
 ?>
 
+<!-- Success messages section -->
 <div class="container-fluid my-5">
     <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -34,10 +67,6 @@ $stores = $GLOBALS['stores_data'];
     </div>
 
     <?php 
-    $storeFilter = ($_SESSION['employee']['employee_role'] === 'chief') 
-        ? $_SESSION['employee']['store_id'] 
-        : null;
-    
     foreach ($stores as $store):
         if ($storeFilter === null || $store['store_id'] == $storeFilter):
     ?>
@@ -161,6 +190,27 @@ $stores = $GLOBALS['stores_data'];
     </div>
 </div>
 
+<?php
+/**
+ * JavaScript Documentation
+ * 
+ * @event DOMContentLoaded
+ * Initializes delete functionality:
+ * - Sets up event listeners for delete buttons
+ * - Handles confirmation modal
+ * - Processes delete requests to API
+ * 
+ * @function deleteEmployee
+ * Sends DELETE request to API endpoint
+ * @param {string} id Employee ID
+ * @param {string} type Entity type (always 'employees')
+ * @returns {Promise} API response
+ * 
+ * @api DELETE /SAE401/api/employees/{id}
+ * Requires API key in headers
+ */
+?>
+
 <script>
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -216,6 +266,9 @@ $stores = $GLOBALS['stores_data'];
     });
 </script>
 
-<?php 
+<?php
+/**
+ * Include footer template
+ */
 include_once('www/footer.inc.php');
 ?>

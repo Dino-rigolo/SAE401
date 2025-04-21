@@ -1,4 +1,21 @@
 <?php
+/**
+ * Products API Controller
+ * 
+ * Handles CRUD operations for bicycle products:
+ * - GET: Retrieve products with filtering options
+ * - POST: Create new products
+ * - PUT: Update existing products
+ * - DELETE: Remove products
+ * 
+ * @package BikeStore\API
+ * @author Your Name
+ * @version 1.0
+ */
+
+/**
+ * Set HTTP headers for CORS and JSON response
+ */
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
@@ -15,7 +32,14 @@ define('API_KEY', 'e8f1997c763');
 
 $request_method = $_SERVER["REQUEST_METHOD"];
 
-// Fonction simplifiée pour valider l'API Key
+/**
+ * API Key validation function
+ * Checks for valid API key in request headers
+ * GET requests are exempt from validation
+ * 
+ * @return void
+ * @throws Exception If API key is invalid or missing
+ */
 function validateApiKey() {
     if($_SERVER["REQUEST_METHOD"] == "GET") return;
     
@@ -31,6 +55,53 @@ validateApiKey();
 $path_info = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
 $request = explode('/', trim($path_info, '/'));
 
+/**
+ * Request handling by HTTP method
+ * 
+ * GET endpoints:
+ * - getall: List all products with optional filters
+ *   Parameters:
+ *   - brand: Filter by brand ID
+ *   - category: Filter by category ID
+ *   - model_year: Filter by year
+ *   - min_price: Minimum price filter
+ *   - max_price: Maximum price filter
+ * 
+ * - getfilters: Get all available filter options
+ *   Returns:
+ *   - brands: List of available brands
+ *   - categories: List of available categories
+ *   - model_years: List of available years
+ * 
+ * - getbyid: Get single product by ID
+ *   Parameters:
+ *   - id: Product ID to retrieve
+ * 
+ * POST endpoint:
+ * - create: Create new product
+ *   Required JSON body:
+ *   - product_name: string
+ *   - brand_id: int
+ *   - category_id: int
+ *   - model_year: int
+ *   - list_price: float
+ * 
+ * PUT endpoint:
+ * - update: Update existing product
+ *   Parameters:
+ *   - id: Product ID to update
+ *   Same JSON body as create
+ * 
+ * DELETE endpoint:
+ * - delete: Remove product
+ *   Parameters:
+ *   - id: Product ID to delete
+ * 
+ * @var string $request_method HTTP method of current request
+ * @var array $request Parsed request path segments
+ * @var \Doctrine\ORM\EntityManager $entityManager Database connection
+ * @throws Exception For invalid actions or data
+ */
 switch ($request_method) {
     case 'GET':
         try {
@@ -237,10 +308,10 @@ switch ($request_method) {
                     $entityManager->flush();
                     echo json_encode(['message' => 'Product deleted']);
                 } else {
-                    throw new Exception('Product not found');
+                    throw new Exception('Product not found pour delete.');
                 }
             } else {
-                throw new Exception('Invalid action');
+                throw new Exception('Invalid action pour delete.');
             }
         } catch (Exception $e) {
             echo json_encode(['error' => $e->getMessage()]);
@@ -252,14 +323,26 @@ switch ($request_method) {
         break;
 }
 
-// Exemples d'utilisation:
-//https://clafoutis.alwaysdata.net/SAE401/api/ApiProducts.php?action=getall"
-
-//https://clafoutis.alwaysdata.net/SAE401/api/ApiProducts.php?action=getbyid&id=1"
-
-// "https://clafoutis.alwaysdata.net/SAE401/api/ApiProducts.php?action=create" -d '{"product_name": "New Product", "brand_id": 1, "category_id": 1, "model_year": 2025, "list_price": 100.00}' -H "Content-Type: application/json"
-
-//"https://clafoutis.alwaysdata.net/SAE401/api/ApiProducts.php?action=update&id=1" -d '{"product_name": "Updated Product", "brand_id": 1, "category_id": 1, "model_year": 2025, "list_price": 150.00}' -H "Content-Type: application/json"
-
-//"https://clafoutis.alwaysdata.net/SAE401/api/ApiProducts.php?action=delete&id=1"
+/**
+ * Usage Examples:
+ * 
+ * GET all products:
+ * GET /SAE401/api/ApiProducts.php?action=getall
+ * 
+ * GET single product:
+ * GET /SAE401/api/ApiProducts.php?action=getbyid&id=1
+ * 
+ * CREATE product:
+ * POST /SAE401/api/ApiProducts.php?action=create
+ * Headers: Content-Type: application/json
+ * Body: {"product_name": "New Product", "brand_id": 1, "category_id": 1, "model_year": 2025, "list_price": 100.00}
+ * 
+ * UPDATE product:
+ * PUT /SAE401/api/ApiProducts.php?action=update&id=1
+ * Headers: Content-Type: application/json
+ * Body: {"product_name": "Updated Product", "brand_id": 1, "category_id": 1, "model_year": 2025, "list_price": 150.00}
+ * 
+ * DELETE product:
+ * DELETE /SAE401/api/ApiProducts.php?action=delete&id=1
+ */
 ?>

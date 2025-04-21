@@ -5,68 +5,99 @@ namespace Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * Employees Entity
+ * 
+ * Represents an employee in the BikeStore system
+ * Manages employee information and store relationships
+ * 
  * @ORM\Entity
  * @ORM\Table(name="employees")
+ * 
+ * @package BikeStore\Entity
+ * @author Your Name
+ * @version 1.0
  */
 class Employees {
     /**
+     * Unique identifier for the employee
+     * 
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
+     * 
+     * @var int Employee ID
      */
     private int $employee_id;
 
     /**
+     * Store where the employee works
+     * Nullable for employees not assigned to a specific store
+     * 
      * @ORM\ManyToOne(targetEntity="Stores", inversedBy="employees")
      * @ORM\JoinColumn(name="store_id", referencedColumnName="store_id", nullable=true)
+     * 
+     * @var ?Stores Associated store or null
      */
     private ?Stores $store;
 
     /**
+     * Full name of the employee
+     * 
      * @ORM\Column(type="string")
+     * @var string Employee's full name
      */
     private string $employee_name;
 
     /**
+     * Email address of the employee
+     * Used for authentication and communication
+     * 
      * @ORM\Column(type="string")
+     * @var string Employee's email address
      */
     private string $employee_email;
 
     /**
+     * Hashed password for employee authentication
+     * 
      * @ORM\Column(type="string")
+     * @var string Employee's hashed password
      */
     private string $employee_password;
 
     /**
+     * Role of the employee in the system
+     * Possible values: employee, chief, it
+     * 
      * @ORM\Column(type="string")
+     * @var string Employee's role
      */
     private string $employee_role;
 
-    // Getters et setters pour chaque propriété
-
     /**
-     * Get the value of employee_id
-     *
-     * @return int
+     * Get the employee's unique identifier
+     * 
+     * @return int The employee's ID
      */
     public function getEmployeeId(): int {
         return $this->employee_id;
     }
 
     /**
-     * Get the value of store
-     *
-     * @return ?Stores
+     * Get the store where the employee works
+     * 
+     * @return ?Stores The associated store or null if not assigned
      */
     public function getStore(): ?Stores {
         return $this->store;
     }
 
     /**
-     * Set the value of store
-     *
-     * @param ?Stores $store
-     * @return self
+     * Set the store for this employee
+     * Updates the store assignment
+     * 
+     * @param ?Stores $store The store to assign or null to remove assignment
+     * @return self Returns this instance for method chaining
      */
     public function setStore(?Stores $store): self {
         $this->store = $store;

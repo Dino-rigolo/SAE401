@@ -1,5 +1,42 @@
-<?php 
+<?php
+/**
+ * Terms & Conditions View
+ * 
+ * Displays the legal terms and conditions for the BikeStores website:
+ * - Legal information and site usage rules
+ * - Privacy policy and data collection details
+ * - Employee login terms
+ * - Intellectual property rights
+ * - Liability limitations
+ * - Contact information
+ * 
+ * @package BikeStore\Views
+ * @version 1.0
+ * @lastModified Generated dynamically from file modification time
+ */
+
+/**
+ * Include header template
+ */
 include_once('www/header.inc.php');
+
+/**
+ * Main content section
+ * Structured in multiple sections covering different legal aspects:
+ * 1. Legal Information
+ * 2. Access and Use
+ * 3. Employee Login and Cookies
+ * 4. Intellectual Property
+ * 5. Privacy Policy
+ * 6. Liability
+ * 7. External Links
+ * 8. Terms Updates
+ * 9. Governing Law
+ * 10. Contact Information
+ * 
+ * @var string $lastUpdated Last modification date of this file
+ */
+$lastUpdated = date("F d, Y", filemtime(__FILE__));
 ?>
 
 <div class="container my-5">
@@ -8,7 +45,7 @@ include_once('www/header.inc.php');
             <div class="card shadow-sm">
                 <div class="card-body p-5">
                     <h1 class="text-center mb-4">Terms & Conditions</h1>
-                    <p class="text-muted text-center mb-4">Last Updated: <?php echo date("F d, Y", filemtime(__FILE__)); ?></p>
+                    <p class="text-muted text-center mb-4">Last Updated: <?php echo $lastUpdated; ?></p>
 
                     <div class="alert alert-light border mb-4">
                         <p>Welcome to BikeStores! These Terms of Use govern your access to and use of our <a href="/SAE401/home" class="text-success">website</a>. By accessing or using the Site, you agree to comply with these Terms. If you do not agree with these Terms, please do not use the Site.</p>
@@ -110,6 +147,9 @@ include_once('www/header.inc.php');
     </div>
 </div>
 
-<?php 
+<?php
+/**
+ * Include footer template
+ */
 include_once('www/footer.inc.php');
 ?>

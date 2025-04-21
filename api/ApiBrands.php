@@ -1,18 +1,51 @@
 <?php
+/**
+ * Brands API Controller
+ * 
+ * Handles CRUD operations for bike brands:
+ * - GET: Retrieve all brands or single brand by ID
+ * - POST: Create new brand
+ * - PUT: Update existing brand
+ * - DELETE: Remove brand
+ * 
+ * @package BikeStore\API
+ * @author Your Name
+ * @version 1.0
+ */
+
+// Set HTTP headers
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 
-require_once '../vendor/autoload.php'; // Assurez-vous que l'autoload de Composer est inclus
+// Include required files
+require_once '../vendor/autoload.php';
 require_once '../src/Entity/Brands.php';
-require_once '../bootstrap.php'; // Fichier pour initialiser Doctrine
+require_once '../bootstrap.php';
 
+/**
+ * API authentication key
+ * @var string
+ */
 define('API_KEY', 'e8f1997c763');
 
 use Entity\Brands;
 
+/**
+ * Current HTTP request method
+ * @var string
+ */
 $request_method = $_SERVER["REQUEST_METHOD"];
 
+/**
+ * Validates API key from request headers
+ * 
+ * GET requests are allowed without authentication
+ * Other methods require valid API key
+ * 
+ * @return void
+ * @throws Exception If API key is missing or invalid
+ */
 function validateApiKey() {
     $headers = getallheaders();
     if($_SERVER["REQUEST_METHOD"]=="GET"){
@@ -29,9 +62,28 @@ validateApiKey();
 $path_info = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
 $request = explode('/', trim($path_info, '/'));
 
+/**
+ * Process the request based on HTTP method
+ * 
+ * GET /brands - List all brands
+ * GET /brands/{id} - Get single brand
+ * POST /brands - Create new brand
+ * PUT /brands/{id} - Update brand
+ * DELETE /brands/{id} - Delete brand
+ * 
+ * @api
+ * @example GET /api/ApiBrands.php?action=getall
+ * @example GET /api/ApiBrands.php?action=getbyid&id=1
+ * @example POST /api/ApiBrands.php?action=create
+ * @example PUT /api/ApiBrands.php?action=update&id=1
+ * @example DELETE /api/ApiBrands.php?action=delete&id=1
+ */
 switch ($request_method) {
     case 'GET':
         try {
+            /**
+             * @var Brands[] $brands Array of brand entities
+             */
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "getall") {
                 $brands = $entityManager->getRepository(Brands::class)->findAll();
                 $brandsArray = array_map(function($brand) {
@@ -61,6 +113,9 @@ switch ($request_method) {
         break;
     case 'POST':
         try {
+            /**
+             * @var array $data Request body containing brand data
+             */
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "create") {
                 $data = json_decode(file_get_contents('php://input'), true);
                 

@@ -1,11 +1,33 @@
+<?php
+/**
+ * Footer Template
+ * 
+ * Provides the common footer structure for all pages:
+ * - Copyright information
+ * - Terms & Conditions link
+ * - Bootstrap integration
+ * 
+ * @package BikeStore\Templates
+ * @version 1.0
+ * 
+ * @var string $currentPath Current page path for active link highlighting
+ */
+?>
+
 </main>
 
 <footer class="bg-dark text-white py-4 mt-5">
     <div class="container">
         <div class="row">
+            <!-- Legal Links Section -->
             <div class="col-md-6">
-                <a href="/SAE401/terms" class="text-white text-decoration-none <?php echo ($currentPath === 'terms') ? 'active' : ''; ?>">Terms & Conditions</a>
+                <a href="/SAE401/terms" 
+                   class="text-white text-decoration-none <?php echo ($currentPath === 'terms') ? 'active' : ''; ?>"
+                   aria-current="<?php echo ($currentPath === 'terms') ? 'page' : 'false'; ?>">
+                    Terms & Conditions
+                </a>
             </div>
+            <!-- Copyright Section -->
             <div class="col-md-6 text-md-end">
                 <span>&copy; 2024 - 2025 BikeStores</span>
             </div>

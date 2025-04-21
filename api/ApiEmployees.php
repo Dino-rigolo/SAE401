@@ -1,20 +1,46 @@
 <?php
+/**
+ * Employees API Controller
+ * 
+ * Handles CRUD operations for employees management:
+ * - GET: Retrieve employees (all, by ID, by store, by role, by email)
+ * - POST: Create new employee
+ * - PUT: Update existing employee
+ * - DELETE: Remove employee
+ * 
+ * @package BikeStore\API
+ * @version 1.0
+ */
+
+// Set HTTP headers
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 
-require_once '../vendor/autoload.php'; // Assurez-vous que l'autoload de Composer est inclus
+// Include required files
+require_once '../vendor/autoload.php';
 require_once '../src/Entity/Employees.php';
 require_once '../src/Entity/Stores.php';
-require_once '../bootstrap.php'; // Fichier pour initialiser Doctrine
+require_once '../bootstrap.php';
 
 use Entity\Employees;
 use Entity\Stores;
 
+/**
+ * API authentication key
+ * @var string
+ */
 define('API_KEY', 'e8f1997c763');
 
 $request_method = $_SERVER["REQUEST_METHOD"];
 
+/**
+ * Validates API key from request headers
+ * GET requests are exempt from authentication
+ * 
+ * @return void
+ * @throws Exception If API key is missing or invalid
+ */
 function validateApiKey() {
     $headers = getallheaders();
     if($_SERVER["REQUEST_METHOD"]=="GET"){
@@ -33,6 +59,16 @@ $request = explode('/', trim($path_info, '/'));
 
 switch ($request_method) {
     case 'GET':
+        /**
+         * Handle GET requests
+         * 
+         * @param string $action Request action (getall|getbyid|getbystore|getbyrole|getbyemail)
+         * @param int $id Optional employee ID
+         * @param int $store_id Optional store ID
+         * @param string $role Optional employee role
+         * @param string $email Optional employee email
+         * @return json Response with employee data or error message
+         */
         try {
             // Vérifie si un paramètre "action" est présent dans la requête
             if (!empty($_REQUEST["action"])) {
@@ -146,6 +182,17 @@ switch ($request_method) {
         }
         break;
     case 'POST':
+        /**
+         * Handle POST requests for employee creation
+         * 
+         * @param array $data JSON body containing:
+         *      - employee_name: string Employee's full name
+         *      - employee_email: string Employee's email
+         *      - employee_password: string Employee's password
+         *      - employee_role: string Employee's role (employee|chief|it)
+         *      - store_id: int Optional store assignment
+         * @return json Response with success or error message
+         */
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "create") {
                 $data = json_decode(file_get_contents('php://input'), true);
@@ -177,6 +224,13 @@ switch ($request_method) {
         }
         break;
     case 'PUT':
+        /**
+         * Handle PUT requests for employee updates
+         * 
+         * @param int $id Employee ID to update
+         * @param array $data JSON body with updated employee data
+         * @return json Response with success or error message
+         */
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "update" && !empty($_REQUEST["id"])) {
                 $data = json_decode(file_get_contents('php://input'), true);
@@ -211,6 +265,12 @@ switch ($request_method) {
         }
         break;
     case 'DELETE':
+        /**
+         * Handle DELETE requests for employee removal
+         * 
+         * @param int $id Employee ID to delete
+         * @return json Response with success or error message
+         */
         try {
             if (!empty($_REQUEST["action"]) && $_REQUEST["action"] == "delete" && !empty($_REQUEST["id"])) {
                 $employee = $entityManager->find(Employees::class, $_REQUEST["id"]);

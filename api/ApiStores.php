@@ -1,4 +1,21 @@
 <?php
+/**
+ * Stores API Controller
+ * 
+ * Handles CRUD operations for store locations:
+ * - GET: Retrieve stores information
+ * - POST: Create new store
+ * - PUT: Update existing store
+ * - DELETE: Remove store
+ * 
+ * @package BikeStore\API
+ * @author Your Name
+ * @version 1.0
+ */
+
+/**
+ * Set HTTP headers for API access
+ */
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
@@ -9,10 +26,25 @@ require_once '../bootstrap.php'; // Fichier pour initialiser Doctrine
 
 use Entity\Stores;
 
+/**
+ * API authentication key
+ * @var string
+ */
 define('API_KEY', 'e8f1997c763');
 
+/**
+ * Current HTTP request method
+ * @var string
+ */
 $request_method = $_SERVER["REQUEST_METHOD"];
 
+/**
+ * Validates API key from request headers
+ * GET requests are exempt from authentication
+ * 
+ * @return void
+ * @throws Exception If API key is missing or invalid
+ */
 function validateApiKey() {
     $headers = getallheaders();
     if($_SERVER["REQUEST_METHOD"]=="GET"){
@@ -29,6 +61,34 @@ validateApiKey();
 $path_info = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
 $request = explode('/', trim($path_info, '/'));
 
+/**
+ * Process the request based on HTTP method
+ * 
+ * @api
+ * @example GET /api/ApiStores.php?action=getall
+ * Get all stores
+ * 
+ * @example GET /api/ApiStores.php?action=getbyid&id=1
+ * Get store by ID
+ * 
+ * @example POST /api/ApiStores.php?action=create
+ * Create new store with JSON body:
+ * {
+ *   "store_name": "New Store",
+ *   "phone": "123-456-7890",
+ *   "email": "store@example.com",
+ *   "street": "123 Main St",
+ *   "city": "Anytown",
+ *   "state": "CA",
+ *   "zip_code": "12345"
+ * }
+ * 
+ * @example PUT /api/ApiStores.php?action=update&id=1
+ * Update store with same JSON structure as POST
+ * 
+ * @example DELETE /api/ApiStores.php?action=delete&id=1
+ * Delete store by ID
+ */
 switch ($request_method) {
     case 'GET':
         try {

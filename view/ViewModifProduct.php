@@ -1,8 +1,39 @@
-<?php 
+<?php
+/**
+ * Product Modification View
+ * 
+ * Provides a form interface for modifying existing products:
+ * - Handles multiple product types (brands, categories, products, stocks)
+ * - Dynamically generates form fields based on product structure
+ * - Supports different input types (text, select, textarea)
+ * - Includes validation and error handling
+ * 
+ * @package BikeStore\Views
+ * @author 
+ * @version 1.0
+ */
+
+/**
+ * Include header template
+ */
 include_once('www/header.inc.php');
 
+/**
+ * Log debug information
+ */
 error_log("Loading ViewModifProduct.php for type: " . ($GLOBALS['page_type'] ?? 'unknown'));
 error_log("Item data: " . json_encode($GLOBALS['item_data'] ?? 'not set'));
+
+/**
+ * @var string $page_type Type of product being modified (brands|categories|products|stocks)
+ * @var array $item Current item data to be modified
+ * @var array $structure Form structure configuration
+ * @var array $select_options Options for select inputs
+ * @var array $current_structure Current product type structure
+ * @var array $form_fields Form fields configuration
+ * @var string $id_field ID field name for the current product type
+ */
+
 $page_type = $GLOBALS['page_type'];
 $item = $GLOBALS['item_data'];
 $structure = $GLOBALS['product_structure'];

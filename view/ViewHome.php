@@ -1,4 +1,20 @@
-<?php 
+<?php
+/**
+ * Home Page View
+ * 
+ * Displays the main landing page of the BikeStore application featuring:
+ * - Welcome banner with call-to-action
+ * - Interactive map showing all store locations
+ * - List of all stores with details
+ * 
+ * @package BikeStore\Views
+ * @author Your Name
+ * @version 1.0
+ */
+
+/**
+ * Include header template
+ */
 include_once('www/header.inc.php');
 ?>
 
@@ -173,6 +189,9 @@ include_once('www/header.inc.php');
     }
 </script>
 
-<?php 
+<?php
+/**
+ * Include footer template
+ */
 include_once('www/footer.inc.php');
 ?>

@@ -1,5 +1,36 @@
-<?php 
+<?php
+/**
+ * Shop Details View
+ * 
+ * Displays detailed information about a specific bike shop:
+ * - Shop name and contact information
+ * - Address and location details
+ * - Welcome message and delivery information
+ * 
+ * @package BikeStore\Views
+ * @author Your Name
+ * @version 1.0
+ */
+
+/**
+ * Include header template
+ * 
+ * @global array $store Contains shop details:
+ *      - store_name: string Shop name
+ *      - phone: string Contact phone number
+ *      - email: string Contact email
+ *      - street: string Street address
+ *      - zip_code: string Postal code
+ *      - city: string City name
+ */
 include_once('www/header.inc.php');
+
+/**
+ * Main content section
+ * Displays shop information in a card-based layout:
+ * - Contact card with phone, address, and email
+ * - Welcome message card with delivery information
+ */
 ?>
 
 <div class="container my-5">
@@ -47,6 +78,9 @@ include_once('www/header.inc.php');
     <?php endif; ?>
 </div>
 
-<?php 
+<?php
+/**
+ * Include footer template
+ */
 include_once('www/footer.inc.php');
 ?>

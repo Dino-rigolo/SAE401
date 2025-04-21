@@ -1,5 +1,41 @@
-<?php 
+<?php
+/**
+ * Product Catalog View
+ * 
+ * Displays the product catalog with filtering capabilities for bikes
+ * Including brand, category, model year and price range filters
+ * 
+ * @package BikeStore\Views
+ * @author 
+ * @version 1.0
+ */
+
+// Include header
 include_once('www/header.inc.php');
+
+/**
+ * JavaScript Functions Documentation
+ * 
+ * @function loadFilters
+ * Fetches and populates filter options from the API
+ * - Brands dropdown
+ * - Categories dropdown
+ * - Model years dropdown
+ * 
+ * @function loadProducts
+ * Fetches and displays products based on selected filters
+ * - Handles price formatting
+ * - Displays loading state
+ * - Renders product cards
+ * - Handles error states
+ * 
+ * @event DOMContentLoaded
+ * Initializes the page:
+ * - Loads initial filters
+ * - Loads initial products
+ * - Sets up event listeners for filter changes
+ * - Sets up input validation for price fields
+ */
 ?>
 
 <div class="container my-5">
@@ -47,54 +83,12 @@ include_once('www/header.inc.php');
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        loadFilters();
-        loadProducts();
-
-        document.getElementById('min-price').addEventListener('input', function(e) {
-            let value = this.value.replace(/[^0-9,.]/g, '');
-            
-            let decimalCount = (value.match(/[,.]/g) || []).length;
-            if (decimalCount > 1) {
-                let parts = value.split(/[,.]/);
-                value = parts[0] + ',' + parts.slice(1).join('');
-            }
-            
-            if (value.indexOf(',') !== -1 || value.indexOf('.') !== -1) {
-                let parts = value.split(/[,.]/);
-                if (parts[1] && parts[1].length > 2) {
-                    parts[1] = parts[1].substring(0, 2);
-                    value = parts[0] + ',' + parts[1];
-                }
-            }
-            
-            this.value = value;
-        });
-        
-        document.getElementById('max-price').addEventListener('input', function(e) {
-            let value = this.value.replace(/[^0-9,.]/g, '');
-            let decimalCount = (value.match(/[,.]/g) || []).length;
-            if (decimalCount > 1) {
-                let parts = value.split(/[,.]/);
-                value = parts[0] + ',' + parts.slice(1).join('');
-            }
-            if (value.indexOf(',') !== -1 || value.indexOf('.') !== -1) {
-                let parts = value.split(/[,.]/);
-                if (parts[1] && parts[1].length > 2) {
-                    parts[1] = parts[1].substring(0, 2);
-                    value = parts[0] + ',' + parts[1];
-                }
-            }
-            this.value = value;
-        });
-
-        document.getElementById('filter-form').addEventListener('change', function () {
-            loadProducts();
-        });
-        document.getElementById('min-price').addEventListener('blur', loadProducts);
-        document.getElementById('max-price').addEventListener('blur', loadProducts);
-    });
-
+    /**
+     * Loads filter options from the API
+     * 
+     * @returns {void}
+     * @throws {Error} When API request fails
+     */
     function loadFilters() {
         fetch('/SAE401/api/ApiProducts.php?action=getfilters')
             .then(response => {
@@ -137,6 +131,12 @@ include_once('www/header.inc.php');
             .catch(error => console.error('Erreur lors du chargement des filtres:', error));
     }
 
+    /**
+     * Loads products based on selected filters
+     * 
+     * @returns {void}
+     * @throws {Error} When API request fails
+     */
     function loadProducts() {
         const brand = document.getElementById('brand').value;
         const category = document.getElementById('category').value;
@@ -213,6 +213,55 @@ include_once('www/header.inc.php');
                 container.innerHTML = '<div class="col-12 text-center text-danger"><p>Error loading products: ' + error.message + '</p></div>';
             });
     }
+
+    // Initialize page when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        loadFilters();
+        loadProducts();
+
+        document.getElementById('min-price').addEventListener('input', function(e) {
+            let value = this.value.replace(/[^0-9,.]/g, '');
+            
+            let decimalCount = (value.match(/[,.]/g) || []).length;
+            if (decimalCount > 1) {
+                let parts = value.split(/[,.]/);
+                value = parts[0] + ',' + parts.slice(1).join('');
+            }
+            
+            if (value.indexOf(',') !== -1 || value.indexOf('.') !== -1) {
+                let parts = value.split(/[,.]/);
+                if (parts[1] && parts[1].length > 2) {
+                    parts[1] = parts[1].substring(0, 2);
+                    value = parts[0] + ',' + parts[1];
+                }
+            }
+            
+            this.value = value;
+        });
+        
+        document.getElementById('max-price').addEventListener('input', function(e) {
+            let value = this.value.replace(/[^0-9,.]/g, '');
+            let decimalCount = (value.match(/[,.]/g) || []).length;
+            if (decimalCount > 1) {
+                let parts = value.split(/[,.]/);
+                value = parts[0] + ',' + parts.slice(1).join('');
+            }
+            if (value.indexOf(',') !== -1 || value.indexOf('.') !== -1) {
+                let parts = value.split(/[,.]/);
+                if (parts[1] && parts[1].length > 2) {
+                    parts[1] = parts[1].substring(0, 2);
+                    value = parts[0] + ',' + parts[1];
+                }
+            }
+            this.value = value;
+        });
+
+        document.getElementById('filter-form').addEventListener('change', function () {
+            loadProducts();
+        });
+        document.getElementById('min-price').addEventListener('blur', loadProducts);
+        document.getElementById('max-price').addEventListener('blur', loadProducts);
+    });
 </script>
 
 <?php
