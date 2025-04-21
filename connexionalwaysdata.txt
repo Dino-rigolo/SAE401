@@ -1,8 +1,0 @@
-isaureboiteau17@gmail.com
-efspiguhg9684328GDFgre624*
-
-
-nom: clafoutis
-greh842384frsgerr*regeouycgr4fezrzar
- 'dbname' => 'clafoutis_sae',
-    'user' => 'clafoutis',
