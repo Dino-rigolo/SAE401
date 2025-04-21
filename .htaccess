@@ -175,6 +175,7 @@ RewriteRule ^deleteemployees/([0-9]+)/?$ controller/index.php?action=deleteemplo
 # More generic rule
 RewriteRule ^add([a-zA-Z]+)/?$ index.php?action=add$1 [L,QSA]
 
+
 # Rule for handling non-API routes (must be last)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f

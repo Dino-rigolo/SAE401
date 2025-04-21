@@ -366,6 +366,9 @@ class Controller {
                     case 'stocks':
                         $this->showStocks();
                         break;
+                    case 'terms':
+                        $this->showTerms();
+                        break;
                     case 'api-docs':
                         // Redirect to Swagger API documentation
                         header('Location: /SAE401/docs swagger/index.html');
@@ -512,30 +515,30 @@ class Controller {
     }
 
     private function showCatalogue() {
-    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/products");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    $products = json_decode($response, true);
-    curl_close($ch);
-    
-    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/categories");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    $categories = json_decode($response, true);
-    curl_close($ch);
-    
-    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/brands");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    $brands = json_decode($response, true);
-    curl_close($ch);
-    
-    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/ApiProducts.php?action=getfilters");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    $filters = json_decode($response, true);
-    curl_close($ch);
-    require_once __DIR__ . '/../view/ViewCatalogue.php';
+        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/products");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $products = json_decode($response, true);
+        curl_close($ch);
+        
+        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/categories");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $categories = json_decode($response, true);
+        curl_close($ch);
+        
+        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/brands");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $brands = json_decode($response, true);
+        curl_close($ch);
+        
+        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/ApiProducts.php?action=getfilters");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $filters = json_decode($response, true);
+        curl_close($ch);
+        require_once __DIR__ . '/../view/ViewCatalogue.php';
     }
     
     private function showConnexion() {
@@ -571,7 +574,7 @@ class Controller {
             error_log("API Error: " . $store['error']);
             throw new ControllerException($store['error'], 404);
         }
-        
+     
         require_once __DIR__ . '/../view/ViewShop.php';
     }
     
@@ -645,7 +648,11 @@ class Controller {
         
         require_once __DIR__ . '/../view/ViewEmployees.php';
     }
-    
+    /**
+     * Displays the Terms & Conditions page
+     * 
+     * @return void
+     */
     private function showTerms() {
         require_once __DIR__ . '/../view/ViewTermsConditions.php';
     }

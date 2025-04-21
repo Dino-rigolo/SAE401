@@ -74,6 +74,7 @@ $lastUpdated = date("F d, Y", filemtime(__FILE__));
                         <p>The Site includes a login feature exclusively for BikeStores employees. Unauthorized login attempts are prohibited.</p>
                         <p>We use cookies to Improve site functionality, Support employee login sessions.</p>
                         <p>By continuing to use the Site, you consent to our use of cookies. You can manage cookie preferences through your browser settings.</p>
+                    </div> 
 
                     <div class="mb-4">
                         <h3 class="text-success mb-3">4. Intellectual Property Rights</h3>
@@ -99,7 +100,7 @@ $lastUpdated = date("F d, Y", filemtime(__FILE__));
 
                     <div class="mb-4">
                         <h3 class="text-success mb-3">6. Limitation of Liability</h3>
-                        <p>The Site is provided "as is" and without warranties of any kind, either express or implied. While we strive to provide accurate information, we do not guarantee the completeness, accuracy, or reliability of the product descriptions, pricing, or availability.</p>
+                        <p>The Site is provided "as is" and without warranties of any kind, either express or implied. While we strive to provide accurate information, we do not guarantee the completeness, accuracy, or reliability of the product specifications, pricing, or availability.</p>
                         <p>In no event shall BikeStores be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising out of the use or inability to use the Site, including, but not limited to, damages for loss of profits, goodwill, use, or data.</p>
                     </div>
 

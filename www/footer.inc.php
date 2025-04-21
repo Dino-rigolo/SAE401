@@ -22,8 +22,7 @@
             <!-- Legal Links Section -->
             <div class="col-md-3">
                 <a href="/SAE401/terms" 
-                   class="text-white text-decoration-none <?php echo ($currentPath === 'terms') ? 'active' : ''; ?>"
-                   aria-current="<?php echo ($currentPath === 'terms') ? 'page' : 'false'; ?>">
+                   class="text-white text-decoration-none <?php echo ($currentPath === 'terms') ? 'active' : ''; ?>" aria-current="<?php echo ($currentPath === 'terms') ? 'page' : 'false'; ?>">
                     Terms & Conditions
                 </a>
             </div>
