@@ -86,14 +86,21 @@ include_once('www/header.inc.php');
     /**
      * Loads filter options from the API
      * 
+     * Fetches brand, category, and model year data from the product API 
+     * and populates the corresponding dropdown menus
+     * 
      * @returns {void}
      * @throws {Error} When API request fails
      */
     function loadFilters() {
-        fetch('/SAE401/api/ApiProducts.php?action=getfilters')
+        fetch('/SAE401/api/ApiProducts.php?action=getfilters', {
+            headers: {
+                'Api': 'e8f1997c763'  // API key for authentication
+            }
+        })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Erreur réseau: ' + response.status);
+                    throw new Error('Network error: ' + response.status);
                 }
                 return response.json();
             })
@@ -128,11 +135,14 @@ include_once('www/header.inc.php');
                     });
                 }
             })
-            .catch(error => console.error('Erreur lors du chargement des filtres:', error));
+            .catch(error => console.error('Error loading filters:', error));
     }
 
     /**
      * Loads products based on selected filters
+     * 
+     * Fetches products from API with applied filters (brand, category, year, price)
+     * and displays them in the product container as cards
      * 
      * @returns {void}
      * @throws {Error} When API request fails
@@ -145,10 +155,11 @@ include_once('www/header.inc.php');
         let minPrice = document.getElementById('min-price').value;
         let maxPrice = document.getElementById('max-price').value;
 
+        // Normalize decimal separator
         if (minPrice) minPrice = minPrice.replace(',', '.');
         if (maxPrice) maxPrice = maxPrice.replace(',', '.');
 
-        console.log("Filtres appliqués:", {
+        console.log("Applied filters:", {
             brand: brand,
             category: category,
             model_year: modelYear,
@@ -166,7 +177,7 @@ include_once('www/header.inc.php');
         if (minPrice) params.append('min_price', minPrice);
         if (maxPrice) params.append('max_price', maxPrice);
         
-        console.log("URL de requête:", `/SAE401/api/ApiProducts.php?${params.toString()}`);
+        console.log("Request URL:", `/SAE401/api/ApiProducts.php?${params.toString()}`);
 
         const container = document.getElementById('product-container');
         container.innerHTML = `
@@ -176,10 +187,14 @@ include_once('www/header.inc.php');
             </div>
         `;
 
-        fetch(`/SAE401/api/ApiProducts.php?${params.toString()}`)
+        fetch(`/SAE401/api/ApiProducts.php?${params.toString()}`, {
+            headers: {
+                'Api': 'e8f1997c763'  // API key for authentication
+            }
+        })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Erreur réseau: ' + response.status);
+                    throw new Error('Network error: ' + response.status);
                 }
                 return response.json();
             })
@@ -209,53 +224,50 @@ include_once('www/header.inc.php');
                 });
             })
             .catch(error => {
-                console.error('Erreur lors du chargement des produits:', error);
+                console.error('Error loading products:', error);
                 container.innerHTML = '<div class="col-12 text-center text-danger"><p>Error loading products: ' + error.message + '</p></div>';
             });
     }
 
+    /**
+     * Validates price input to ensure it contains only valid currency format
+     * 
+     * @param {Event} e - Input event
+     * @returns {void}
+     */
+    function validatePriceInput(e) {
+        let value = this.value.replace(/[^0-9,.]/g, '');
+        
+        // Handle multiple decimal separators
+        let decimalCount = (value.match(/[,.]/g) || []).length;
+        if (decimalCount > 1) {
+            let parts = value.split(/[,.]/);
+            value = parts[0] + ',' + parts.slice(1).join('');
+        }
+        
+        // Limit to 2 decimal places
+        if (value.indexOf(',') !== -1 || value.indexOf('.') !== -1) {
+            let parts = value.split(/[,.]/);
+            if (parts[1] && parts[1].length > 2) {
+                parts[1] = parts[1].substring(0, 2);
+                value = parts[0] + ',' + parts[1];
+            }
+        }
+        
+        this.value = value;
+    }
+
     // Initialize page when DOM is loaded
     document.addEventListener('DOMContentLoaded', function () {
+        // Load initial data
         loadFilters();
         loadProducts();
 
-        document.getElementById('min-price').addEventListener('input', function(e) {
-            let value = this.value.replace(/[^0-9,.]/g, '');
-            
-            let decimalCount = (value.match(/[,.]/g) || []).length;
-            if (decimalCount > 1) {
-                let parts = value.split(/[,.]/);
-                value = parts[0] + ',' + parts.slice(1).join('');
-            }
-            
-            if (value.indexOf(',') !== -1 || value.indexOf('.') !== -1) {
-                let parts = value.split(/[,.]/);
-                if (parts[1] && parts[1].length > 2) {
-                    parts[1] = parts[1].substring(0, 2);
-                    value = parts[0] + ',' + parts[1];
-                }
-            }
-            
-            this.value = value;
-        });
-        
-        document.getElementById('max-price').addEventListener('input', function(e) {
-            let value = this.value.replace(/[^0-9,.]/g, '');
-            let decimalCount = (value.match(/[,.]/g) || []).length;
-            if (decimalCount > 1) {
-                let parts = value.split(/[,.]/);
-                value = parts[0] + ',' + parts.slice(1).join('');
-            }
-            if (value.indexOf(',') !== -1 || value.indexOf('.') !== -1) {
-                let parts = value.split(/[,.]/);
-                if (parts[1] && parts[1].length > 2) {
-                    parts[1] = parts[1].substring(0, 2);
-                    value = parts[0] + ',' + parts[1];
-                }
-            }
-            this.value = value;
-        });
+        // Set up price input validation
+        document.getElementById('min-price').addEventListener('input', validatePriceInput);
+        document.getElementById('max-price').addEventListener('input', validatePriceInput);
 
+        // Set up filter change listeners
         document.getElementById('filter-form').addEventListener('change', function () {
             loadProducts();
         });

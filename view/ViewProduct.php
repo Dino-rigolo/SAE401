@@ -253,44 +253,92 @@ $form_fields = $current_structure['form_fields'];
 </div>
 
 <script>
+    /**
+     * Product Management JavaScript
+     * 
+     * Handles delete functionality and UI interactions for product management:
+     * - Delete confirmation modal interaction
+     * - Collapsible sections for add/edit forms
+     * - API integration for delete operations
+     * 
+     * @module ProductManager
+     * @author Your Name
+     * @version 1.0
+     */
 
+    /**
+     * Initialize event handlers when DOM content is loaded
+     * 
+     * @function
+     * @listens DOMContentLoaded
+     */
     document.addEventListener('DOMContentLoaded', function() {
         const deleteButtons = document.querySelectorAll('.delete-btn');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const deleteItemName = document.getElementById('deleteItemName');
+        
+        /**
+         * Store data for item to be deleted
+         * @type {string} deleteId - ID of the item to delete
+         * @type {string} deleteType - Type of entity (products, brands, categories, etc.)
+         */
         let deleteId, deleteType;
 
+        /**
+         * Set up event handlers for all delete buttons
+         * Populates the confirmation modal with item data
+         * 
+         * @function
+         * @listens click
+         */
         deleteButtons.forEach(button => {
             button.addEventListener('click', function(event) {
-    
+                // Prevent default anchor behavior
                 event.preventDefault();
                 
+                // Extract data attributes from clicked button
                 deleteId = this.getAttribute('data-id');
                 const name = this.getAttribute('data-name') || 'cet élément';
                 deleteType = this.getAttribute('data-type');
 
+                // Update modal content with item name
                 deleteItemName.textContent = name;
 
+                // Show confirmation modal
                 const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
                 deleteModal.show();
             });
         });
 
-  
+        /**
+         * Handle delete confirmation
+         * Sends DELETE request to API and handles response
+         * 
+         * @function
+         * @listens click
+         */
         confirmDeleteBtn.addEventListener('click', function() {
-
+            // Construct API endpoint URL
             const url = `https://clafoutis.alwaysdata.net/SAE401/api/${deleteType}/${deleteId}?action=delete`;
             
-
+            // Hide modal before API call
             const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
             deleteModal.hide();
             
-       
+            /**
+             * Send delete request to API
+             * 
+             * @method DELETE
+             * @param {string} url - API endpoint for deletion
+             * @param {Object} options - Request options including headers
+             * @returns {Promise<Response>} API response
+             * @throws {Error} When API call fails
+             */
             fetch(url, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Api': 'e8f1997c763' 
+                    'Api': 'e8f1997c763' // API authentication key
                 }
             })
             .then(response => {
@@ -302,7 +350,7 @@ $form_fields = $current_structure['form_fields'];
                 return response.json();
             })
             .then(data => {
- 
+                // Redirect to entity listing with success message
                 window.location.href = `/SAE401/${deleteType}?delete=1`;
             })
             .catch(error => {
@@ -312,7 +360,16 @@ $form_fields = $current_structure['form_fields'];
         });
     });
 
-
+    /**
+     * Capitalizes the first letter of a string
+     * 
+     * @function
+     * @param {string} string - The string to capitalize
+     * @returns {string} The capitalized string
+     * @example
+     * const result = capitalizeFirstLetter("products");
+     * // result = "Products"
+     */
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }

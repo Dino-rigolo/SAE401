@@ -20,12 +20,15 @@
     <div class="container">
         <div class="row">
             <!-- Legal Links Section -->
-            <div class="col-md-6">
+            <div class="col-md-3">
                 <a href="/SAE401/terms" 
                    class="text-white text-decoration-none <?php echo ($currentPath === 'terms') ? 'active' : ''; ?>"
                    aria-current="<?php echo ($currentPath === 'terms') ? 'page' : 'false'; ?>">
                     Terms & Conditions
                 </a>
+            </div>
+            <div class="col-md-3">
+                <a href="/SAE401/api-docs" class="text-white text-decoration-none">API Documentation</a>
             </div>
             <!-- Copyright Section -->
             <div class="col-md-6 text-md-end">

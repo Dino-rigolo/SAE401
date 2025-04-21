@@ -1,140 +1,154 @@
 RewriteEngine On
+
+# Redirect root domain to SAE401/home
+RewriteCond %{HTTP_HOST} ^clafoutis\.alwaysdata\.net$ [NC]
+RewriteCond %{REQUEST_URI} ^/?$ 
+RewriteRule ^(.*)$ /SAE401/home [R=301,L]
+
 RewriteBase /SAE401/
 
-# Autoriser l'accès direct aux fichiers statiques
+# Allow direct access to static files
 RewriteCond %{REQUEST_URI} \.(css|js|jpg|jpeg|png|gif|ico)$ [OR]
 RewriteCond %{REQUEST_URI} ^/SAE401/www/
 RewriteRule .* - [L]
 
-# Placer cette règle avant les règles API
+# Allow direct access to Swagger documentation
+RewriteCond %{REQUEST_URI} ^/SAE401/docs\ swagger/ [OR]
+RewriteCond %{REQUEST_URI} ^/SAE401/docs-swagger/
+RewriteRule .* - [L]
+
+# Redirect api-docs URL to Swagger documentation
+RewriteRule ^api-docs/?$ docs\ swagger/index.html [NC,L]
+
+# Place this rule before API rules
 RewriteRule ^shop/([0-9]+)/?$ index.php?action=shop&id=$1 [QSA,L]
 
-# Ensuite les règles API
-# Routes pour les marques (Brands)
-# GET - Récupérer toutes les marques
+# API routes
+# Routes for Brands
+# GET - Retrieve all brands
 RewriteRule ^api/brands/?$ api/ApiBrands.php?action=getall [L,QSA]
 
-# GET - Récupérer une marque par ID
+# GET - Retrieve a brand by ID
 RewriteRule ^api/brands/([0-9]+)/?$ api/ApiBrands.php?action=getbyid&id=$1 [L,QSA]
 
-# POST - Créer une nouvelle marque
+# POST - Create a new brand
 RewriteCond %{REQUEST_METHOD} POST
 RewriteRule ^api/brands/?$ api/ApiBrands.php?action=create [L,QSA]
 
-# PUT - Mettre à jour une marque
+# PUT - Update a brand
 RewriteCond %{REQUEST_METHOD} PUT
 RewriteRule ^api/brands/([0-9]+)/?$ api/ApiBrands.php?action=update&id=$1 [L,QSA]
 
-# DELETE - Supprimer une marque
+# DELETE - Delete a brand
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/brands/([0-9]+)/?$ api/ApiBrands.php?action=delete&id=$1 [L,QSA]
 
-# Routes pour les catégories (Categories)
-# GET - Récupérer toutes les catégories
+# Routes for Categories
+# GET - Retrieve all categories
 RewriteRule ^api/categories/?$ api/ApiCategories.php?action=getall [L,QSA]
 
-# GET - Récupérer une catégorie par ID
+# GET - Retrieve a category by ID
 RewriteRule ^api/categories/([0-9]+)/?$ api/ApiCategories.php?action=getbyid&id=$1 [L,QSA]
 
-# POST - Créer une nouvelle catégorie
+# POST - Create a new category
 RewriteCond %{REQUEST_METHOD} POST
 RewriteRule ^api/categories/?$ api/ApiCategories.php?action=create [L,QSA]
 
-# PUT - Mettre à jour une catégorie
+# PUT - Update a category
 RewriteCond %{REQUEST_METHOD} PUT
 RewriteRule ^api/categories/([0-9]+)/?$ api/ApiCategories.php?action=update&id=$1 [L,QSA]
 
-# DELETE - Supprimer une catégorie
+# DELETE - Delete a category
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/categories/([0-9]+)/?$ api/ApiCategories.php?action=delete&id=$1 [L,QSA]
 
-# Routes pour les employés (Employees)
-# GET - Récupérer tous les employés
+# Routes for Employees
+# GET - Retrieve all employees
 RewriteRule ^api/employees/?$ api/ApiEmployees.php?action=getall [L,QSA]
 
-# GET - Récupérer un employé par ID
+# GET - Retrieve an employee by ID
 RewriteRule ^api/employees/([0-9]+)/?$ api/ApiEmployees.php?action=getbyid&id=$1 [L,QSA]
 
-# GET - Récupérer un employé par email
+# GET - Retrieve an employee by email
 RewriteRule ^api/employees/email/([^/]+)/?$ api/ApiEmployees.php?action=getbyemail&email=$1 [L,QSA]
 
-# POST - Créer un nouvel employé
+# POST - Create a new employee
 RewriteCond %{REQUEST_METHOD} POST
 RewriteRule ^api/employees/?$ api/ApiEmployees.php?action=create [L,QSA]
 
-# PUT - Mettre à jour un employé
+# PUT - Update an employee
 RewriteCond %{REQUEST_METHOD} PUT
 RewriteRule ^api/employees/([0-9]+)/?$ api/ApiEmployees.php?action=update&id=$1 [L,QSA]
 
-# DELETE - Supprimer un employé
+# DELETE - Delete an employee
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/employees/([0-9]+)/?$ api/ApiEmployees.php?action=delete&id=$1 [L,QSA]
 
-# Routes pour les produits (Products)
-# GET - Récupérer tous les produits
+# Routes for Products
+# GET - Retrieve all products
 RewriteRule ^api/products/?$ api/ApiProducts.php?action=getall [L,QSA]
 
-# GET - Récupérer un produit par ID
+# GET - Retrieve a product by ID
 RewriteRule ^api/products/([0-9]+)/?$ api/ApiProducts.php?action=getbyid&id=$1 [L,QSA]
 
-# POST - Créer un nouveau produit
+# POST - Create a new product
 RewriteCond %{REQUEST_METHOD} POST
 RewriteRule ^api/products/?$ api/ApiProducts.php?action=create [L,QSA]
 
-# PUT - Mettre à jour un produit
+# PUT - Update a product
 RewriteCond %{REQUEST_METHOD} PUT
 RewriteRule ^api/products/([0-9]+)/?$ api/ApiProducts.php?action=update&id=$1 [L,QSA]
 
-# DELETE - Supprimer un produit
+# DELETE - Delete a product
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/products/([0-9]+)/?$ api/ApiProducts.php?action=delete&id=$1 [L,QSA]
 
-# Routes pour les stocks (Stocks)
-# GET - Récupérer tous les stocks
+# Routes for Stocks
+# GET - Retrieve all stocks
 RewriteRule ^api/stocks/?$ api/ApiStocks.php?action=getall [L,QSA]
 
-# GET - Récupérer un stock par ID
+# GET - Retrieve stock by ID
 RewriteRule ^api/stocks/([0-9]+)/?$ api/ApiStocks.php?action=getbyid&id=$1 [L,QSA]
 
-# POST - Créer un nouveau stock
+# POST - Create a new stock
 RewriteCond %{REQUEST_METHOD} POST
 RewriteRule ^api/stocks/?$ api/ApiStocks.php?action=create [L,QSA]
 
-# PUT - Mettre à jour un stock
+# PUT - Update a stock
 RewriteCond %{REQUEST_METHOD} PUT
 RewriteRule ^api/stocks/([0-9]+)/?$ api/ApiStocks.php?action=update&id=$1 [L,QSA]
 
-# DELETE - Supprimer un stock
+# DELETE - Delete a stock
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/stocks/([0-9]+)/?$ api/ApiStocks.php?action=delete&id=$1 [L,QSA]
 
-# Routes pour les magasins (Stores)
-# GET - Récupérer tous les magasins
+# Routes for Stores
+# GET - Retrieve all stores
 RewriteRule ^api/stores/?$ api/ApiStores.php?action=getall [L,QSA]
 
-# GET - Récupérer un magasin par ID
+# GET - Retrieve a store by ID
 RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=getbyid&id=$1 [L,QSA]
 
-# POST - Créer un nouveau magasin
+# POST - Create a new store
 RewriteCond %{REQUEST_METHOD} POST
 RewriteRule ^api/stores/?$ api/ApiStores.php?action=create [L,QSA]
 
-# PUT - Mettre à jour un magasin
+# PUT - Update a store
 RewriteCond %{REQUEST_METHOD} PUT
 RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=update&id=$1 [L,QSA]
 
-# DELETE - Supprimer un magasin
+# DELETE - Delete a store
 RewriteCond %{REQUEST_METHOD} DELETE
 RewriteRule ^api/stores/([0-9]+)/?$ api/ApiStores.php?action=delete&id=$1 [L,QSA]
 
-# Règle générale pour les actions add
+# General rule for add actions
 RewriteRule ^addbrands/?$ controller/index.php?action=addbrands [L,QSA]
 RewriteRule ^addcategories/?$ controller/index.php?action=addcategories [L,QSA]
 RewriteRule ^addshops/?$ controller/index.php?action=addshops [L,QSA]
 RewriteRule ^addproducts/?$ controller/index.php?action=addproducts [L,QSA]
 RewriteRule ^addstocks/?$ controller/index.php?action=addstocks [L,QSA]
 
-# Routes pour les actions de modification
+# Routes for modification actions
 RewriteRule ^modifbrands/([0-9]+)/?$ controller/index.php?action=modifbrands&id=$1 [L,QSA]
 RewriteRule ^modifcategories/([0-9]+)/?$ controller/index.php?action=modifcategories&id=$1 [L,QSA]
 RewriteRule ^modifshops/([0-9]+)/?$ controller/index.php?action=modifshops&id=$1 [L,QSA]
@@ -142,7 +156,7 @@ RewriteRule ^modifproducts/([0-9]+)/?$ controller/index.php?action=modifproducts
 RewriteRule ^modifstocks/([0-9]+)/?$ controller/index.php?action=modifstocks&id=$1 [L,QSA]
 RewriteRule ^modifemployees/([0-9]+)/?$ controller/index.php?action=modifemployees&id=$1 [L,QSA]
 
-# Routes pour les actions de mise à jour
+# Routes for update actions
 RewriteRule ^updatebrands/?$ controller/index.php?action=updatebrands [L,QSA]
 RewriteRule ^updatecategories/?$ controller/index.php?action=updatecategories [L,QSA]
 RewriteRule ^updateshops/?$ controller/index.php?action=updateshops [L,QSA]
@@ -150,7 +164,7 @@ RewriteRule ^updateproducts/?$ controller/index.php?action=updateproducts [L,QSA
 RewriteRule ^updatestocks/?$ controller/index.php?action=updatestocks [L,QSA]
 RewriteRule ^updateemployees/?$ controller/index.php?action=updateemployees [L,QSA]
 
-# Routes pour les actions de suppression
+# Routes for delete actions
 RewriteRule ^deletebrands/([0-9]+)/?$ controller/index.php?action=deletebrands&id=$1 [L,QSA]
 RewriteRule ^deletecategories/([0-9]+)/?$ controller/index.php?action=deletecategories&id=$1 [L,QSA]
 RewriteRule ^deleteshops/([0-9]+)/?$ controller/index.php?action=deleteshops&id=$1 [L,QSA]
@@ -158,15 +172,15 @@ RewriteRule ^deleteproducts/([0-9]+)/?$ controller/index.php?action=deleteproduc
 RewriteRule ^deletestocks/([0-9]+)/?$ controller/index.php?action=deletestocks&id=$1 [L,QSA]
 RewriteRule ^deleteemployees/([0-9]+)/?$ controller/index.php?action=deleteemployees&id=$1 [L,QSA]
 
-# Ou une règle plus générique
+# More generic rule
 RewriteRule ^add([a-zA-Z]+)/?$ index.php?action=add$1 [L,QSA]
 
-# Règle pour gérer les routes non-API (doit être en dernier)
+# Rule for handling non-API routes (must be last)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ index.php?action=$1 [QSA,L]
 
-# Permettre CORS pour l'API
+# Allow CORS for API
 <IfModule mod_headers.c>
     <FilesMatch "^api/">
         Header Set Access-Control-Allow-Origin "*"

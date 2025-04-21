@@ -366,6 +366,11 @@ class Controller {
                     case 'stocks':
                         $this->showStocks();
                         break;
+                    case 'api-docs':
+                        // Redirect to Swagger API documentation
+                        header('Location: /SAE401/docs swagger/index.html');
+                        exit;
+                        break;
                         
                     default:
                         throw new ControllerException("Page not found", 404);
