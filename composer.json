@@ -4,7 +4,8 @@
         "doctrine/dbal": "^3.2",
         "symfony/yaml": "^5.4",
         "symfony/cache": "^5.4",
-        "doctrine/annotations": "^2.0"
+        "doctrine/annotations": "^2.0",
+        "phpdocumentor/shim": "^3.7"
     },
     "autoload": {
         "psr-0": {"": "src/"}
@@ -12,6 +13,9 @@
     "config": {
         "platform": {
             "php": "7.4.25"
+        },
+        "allow-plugins": {
+            "phpdocumentor/shim": true
         }
     }
 }

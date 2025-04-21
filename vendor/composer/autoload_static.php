@@ -18,6 +18,10 @@ class ComposerStaticInit0e657f65c1860401967558dd115291e2
     );
 
     public static $prefixLengthsPsr4 = array (
+        'p' => 
+        array (
+            'phpDocumentor\\' => 14,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Php80\\' => 23,
@@ -39,6 +43,7 @@ class ComposerStaticInit0e657f65c1860401967558dd115291e2
             'Psr\\Log\\' => 8,
             'Psr\\Container\\' => 14,
             'Psr\\Cache\\' => 10,
+            'PharIo\\ComposerDistributor\\' => 27,
         ),
         'D' => 
         array (
@@ -57,6 +62,10 @@ class ComposerStaticInit0e657f65c1860401967558dd115291e2
     );
 
     public static $prefixDirsPsr4 = array (
+        'phpDocumentor\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpdocumentor/shim/src',
+        ),
         'Symfony\\Polyfill\\Php80\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
@@ -121,6 +130,10 @@ class ComposerStaticInit0e657f65c1860401967558dd115291e2
         array (
             0 => __DIR__ . '/..' . '/psr/cache/src',
         ),
+        'PharIo\\ComposerDistributor\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phar-io/composer-distributor/src',
+        ),
         'Doctrine\\Persistence\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/persistence/src/Persistence',
@@ -177,6 +190,20 @@ class ComposerStaticInit0e657f65c1860401967558dd115291e2
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'JsonException' => __DIR__ . '/..' . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
         'Normalizer' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
+        'PharIo\\Executor\\Exception' => __DIR__ . '/..' . '/phar-io/executor/src/ExecutorException.php',
+        'PharIo\\Executor\\Executor' => __DIR__ . '/..' . '/phar-io/executor/src/Executor.php',
+        'PharIo\\Executor\\ExecutorResult' => __DIR__ . '/..' . '/phar-io/executor/src/ExecutorResult.php',
+        'PharIo\\FileSystem\\Directory' => __DIR__ . '/..' . '/phar-io/filesystem/src/Directory.php',
+        'PharIo\\FileSystem\\DirectoryException' => __DIR__ . '/..' . '/phar-io/filesystem/src/DirectoryException.php',
+        'PharIo\\FileSystem\\Exception' => __DIR__ . '/..' . '/phar-io/filesystem/src/Exception.php',
+        'PharIo\\FileSystem\\File' => __DIR__ . '/..' . '/phar-io/filesystem/src/File.php',
+        'PharIo\\FileSystem\\Filename' => __DIR__ . '/..' . '/phar-io/filesystem/src/Filename.php',
+        'PharIo\\FileSystem\\FilenameException' => __DIR__ . '/..' . '/phar-io/filesystem/src/FilenameException.php',
+        'PharIo\\FileSystem\\LastModifiedDate' => __DIR__ . '/..' . '/phar-io/filesystem/src/LastModifiedDate.php',
+        'PharIo\\GnuPG\\ErrorStrings' => __DIR__ . '/..' . '/phar-io/gnupg/src/ErrorStrings.php',
+        'PharIo\\GnuPG\\Exception' => __DIR__ . '/..' . '/phar-io/gnupg/src/Exception.php',
+        'PharIo\\GnuPG\\Factory' => __DIR__ . '/..' . '/phar-io/gnupg/src/Factory.php',
+        'PharIo\\GnuPG\\GnuPG' => __DIR__ . '/..' . '/phar-io/gnupg/src/GnuPG.php',
         'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
         'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
