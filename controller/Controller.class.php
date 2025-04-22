@@ -1312,4 +1312,35 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
         header("Location: /SAE401/products?type={$type}&delete=1");
         exit;
     }
+
+    private function showModifEmployees() {
+        if (!isset($this->id)) {
+            throw new ControllerException("Missing employee ID", 400);
+        }
+        
+        // Récupérer les informations de l'employé
+        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/employees/{$this->id}");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $employee = json_decode($response, true);
+        curl_close($ch);
+        
+        if (empty($employee)) {
+            throw new ControllerException("Employee not found", 404);
+        }
+        
+        // Récupérer la liste des magasins pour les admins IT
+        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/stores");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $stores = json_decode($response, true);
+        curl_close($ch);
+        
+        // Passer les données à la vue
+        $GLOBALS['employee_data'] = $employee;
+        $GLOBALS['stores_data'] = $stores;
+        
+        // Rediriger vers la vue spécifique pour les employés
+        require_once __DIR__ . '/../view/ViewModifEmployee.php';
+    }
 }
