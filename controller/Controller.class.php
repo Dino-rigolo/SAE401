@@ -323,6 +323,12 @@ class Controller {
                         }
                         $this->showModifProduct();
                         break;
+                    case 'modifEmployees':
+                        if (!$isChef && !$isIT) {
+                            throw new ControllerException("Access forbidden", 403);
+                        }
+                        $this->showModifEmployees();
+                        break;
                         
                     case 'employees':
                         if (!$isChef && !$isIT) {
@@ -1170,7 +1176,11 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
         $GLOBALS['product_select_options'] = $select_options;
         $GLOBALS['product_title'] = isset($this->getTitles()[$type]) ? $this->getTitles()[$type] : 'Element';
         
-        require_once __DIR__ . '/../view/ViewModifProduct.php';
+        if ($type === 'employees') {
+            $this->showModifEmployees();
+        } else {
+            require_once __DIR__ . '/../view/ViewModifProduct.php';
+        }
     }
 
     /**
@@ -1314,33 +1324,38 @@ else if ($type === 'stocks' && (!isset($item['store_id']) || !isset($item['produ
     }
 
     private function showModifEmployees() {
-        if (!isset($this->id)) {
-            throw new ControllerException("Missing employee ID", 400);
-        }
-        
-        // Récupérer les informations de l'employé
-        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/employees/{$this->id}");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        $employee = json_decode($response, true);
-        curl_close($ch);
-        
-        if (empty($employee)) {
-            throw new ControllerException("Employee not found", 404);
-        }
-        
-        // Récupérer la liste des magasins pour les admins IT
-        $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/stores");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        $stores = json_decode($response, true);
-        curl_close($ch);
-        
-        // Passer les données à la vue
-        $GLOBALS['employee_data'] = $employee;
-        $GLOBALS['stores_data'] = $stores;
-        
-        // Rediriger vers la vue spécifique pour les employés
-        require_once __DIR__ . '/../view/ViewModifEmployee.php';
+    if (!isset($this->id)) {
+        throw new ControllerException("Missing employee ID", 400);
     }
+    
+    // Récupérer les informations de l'employé avec l'API
+    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/employees/{$this->id}?action=getbyid");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Api: e8f1997c763']);
+    $response = curl_exec($ch);
+    $employee = json_decode($response, true);
+    curl_close($ch);
+    
+    if (empty($employee)) {
+        throw new ControllerException("Employee not found", 404);
+    }
+    
+    // Log des données récupérées pour déboguer
+    error_log("Employee data received: " . json_encode($employee));
+    
+    // Récupérer la liste des magasins pour les admins IT
+    $ch = curl_init("https://clafoutis.alwaysdata.net/SAE401/api/stores?action=getall");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Api: e8f1997c763']);
+    $response = curl_exec($ch);
+    $stores = json_decode($response, true);
+    curl_close($ch);
+    
+    // Passer les données à la vue en utilisant $GLOBALS
+    $GLOBALS['employee_data'] = $employee;
+    $GLOBALS['stores_data'] = $stores;
+    
+    // Charger la vue de modification d'employé
+    require_once __DIR__ . '/../view/ViewModifEmployee.php';
+}
 }
