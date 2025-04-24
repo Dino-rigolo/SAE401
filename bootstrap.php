@@ -42,10 +42,10 @@ $config = ORMSetup::createAnnotationMetadataConfiguration($paths, $isDevMode);
  * @var \Doctrine\DBAL\Connection $connection
  */
 $connection = DriverManager::getConnection([
-    'dbname' => 'clafoutis_sae',
-    'user' => 'clafoutis',
-    'password' => 'greh842384frsgerr*regeouycgr4fezrzar',
-    'host' => 'mysql-clafoutis.alwaysdata.net:3306',
+    'dbname' => '',
+    'user' => '',
+    'password' => '',
+    'host' => '',
     'driver' => 'pdo_mysql',
 ], $config);
 
@@ -57,5 +57,6 @@ $connection = DriverManager::getConnection([
  */
 $entityManager = new EntityManager($connection, $config);
 ?>
+
 
 
